@@ -763,6 +763,25 @@ async function storeOnBlockchain() {
       wallet:          ch.walletAddress,
     };
     mv.blockchainTx = txData;
+    // Save key alongside this specific transaction for retrieval
+    txData.encryptionKey = mv.encryptionKey || null;
+    txData.encryptionIV  = mv.encryptionIV  || null;
+    txData.ipfsCID       = mv.ipfsCID       || null;
+    txData.sha256Hash    = mv.sha256Hash    || null;
+    mv.blockchainTx = txData;
+    // Also persist per-network key to localStorage for retrieval page
+    try {
+      const networkKey = 'mv_key_' + (txData.network || 'ganache').replace(/\s+/g,'_').toLowerCase();
+      localStorage.setItem(networkKey, JSON.stringify({
+        key:     mv.encryptionKey,
+        iv:      mv.encryptionIV,
+        cid:     mv.ipfsCID,
+        hash:    mv.sha256Hash,
+        recordId: recordId,
+        network:  txData.network,
+        ts:       new Date().toISOString()
+      }));
+    } catch(_) {}
     mv.save();
     addAuditLog('BLOCKCHAIN_STORE',
       'TX:' + receipt.hash.slice(0,18) + '... Record:#' + recordId + ' Net:' + netName,

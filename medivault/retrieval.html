@@ -342,8 +342,32 @@ async function doConnect() {
 }
 
 function useSessionKey() {
-  const k = window.MediVault.encryptionKey;
-  if (k) { document.getElementById('dec-key').value = k; toast('Session key filled', 'success'); }
+  // Try to get network-specific saved key first
+  const ch = window._mvChain;
+  let usedKey = null;
+
+  // Check saved keys by network
+  const nets = ['sepolia_testnet', 'ganache_local'];
+  for (const net of nets) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('mv_key_' + net) || 'null');
+      if (saved && saved.key) {
+        usedKey = saved.key;
+        toast('Key loaded from ' + net.replace('_',' ') + ' session', 'success');
+        break;
+      }
+    } catch(_) {}
+  }
+
+  // Fallback to general session key
+  if (!usedKey) usedKey = window.MediVault.encryptionKey;
+
+  if (usedKey) {
+    document.getElementById('dec-key').value = usedKey;
+    if (!toast) return;
+  } else {
+    toast('No saved key found', 'warning');
+  }
 }
 
 // ── MAIN DECRYPT ────────────────────────────────────────────
@@ -546,9 +570,39 @@ function doDownload() {
   a.click();
 }
 
-// ── Init: show session key hint ──────────────────────────────
-if (window.MediVault.encryptionKey) {
-  document.getElementById('use-session-btn').style.display = 'inline';
+// ── Init: show session key hint + saved network keys ─────────
+(function initKeyHints() {
+  // Check all saved network keys
+  const networks = ['ganache_local', 'sepolia_testnet'];
+  const savedKeys = [];
+  for (const net of networks) {
+    try {
+      const saved = JSON.parse(localStorage.getItem('mv_key_' + net) || 'null');
+      if (saved && saved.key) savedKeys.push({ ...saved, netLabel: net.replace('_',' ') });
+    } catch(_) {}
+  }
+
+  if (window.MediVault.encryptionKey || savedKeys.length > 0) {
+    document.getElementById('use-session-btn').style.display = 'inline';
+  }
+
+  // Show saved keys hint if any
+  if (savedKeys.length > 0) {
+    const hint = document.createElement('div');
+    hint.style.cssText = 'margin-top:10px;font-size:11px;color:var(--text-muted);';
+    hint.innerHTML = '<strong style="color:var(--text);">Saved keys:</strong> ' +
+      savedKeys.map(s =>
+        `<span onclick="useSavedKey('${s.key}')" style="cursor:pointer;color:var(--primary);margin-left:8px;text-decoration:underline;">
+          ${s.netLabel} (${new Date(s.ts).toLocaleDateString()})
+        </span>`
+      ).join('');
+    document.getElementById('dec-key').parentNode.appendChild(hint);
+  }
+})();
+
+function useSavedKey(key) {
+  document.getElementById('dec-key').value = key;
+  toast('Key filled from saved records', 'success');
 }
 </script>
 </body>
