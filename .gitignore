@@ -4,9 +4,10 @@ node_modules/
 # Large image dataset — too big for GitHub (use Git LFS or external storage)
 images/
 
-# Environment & secrets
+# Environment & secrets — NEVER commit .env to git
 .env
 .env.local
+.env.production
 
 # OS files
 .DS_Store

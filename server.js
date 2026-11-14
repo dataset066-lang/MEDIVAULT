@@ -1,6 +1,29 @@
+/**
+ * MediVault — server.js
+ * Reads config from .env file automatically
+ * Run: node server.js
+ */
+
 const http = require('http');
 const fs   = require('fs');
 const path = require('path');
+
+// ── Load .env file ───────────────────────────────────────────────
+function loadEnv() {
+  const envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) return;
+  const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx < 0) continue;
+    const key = trimmed.substring(0, eqIdx).trim();
+    const val = trimmed.substring(eqIdx + 1).trim();
+    if (key && !process.env[key]) process.env[key] = val;
+  }
+}
+loadEnv();
 
 const PORT = process.env.PORT || 3000;
 
@@ -19,13 +42,12 @@ const mime = {
 };
 
 const server = http.createServer((req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin',  '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
-  // Contract config API
+  // ── /api/config → Ganache contract config ──────────────────────
   if (req.url === '/api/config') {
     const cfgPath = path.join(__dirname, 'contract-config.json');
     if (fs.existsSync(cfgPath)) {
@@ -38,7 +60,37 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // Static files
+  // ── /api/config-sepolia → Sepolia contract config ──────────────
+  if (req.url === '/api/config-sepolia') {
+    const cfgPath = path.join(__dirname, 'contract-config-sepolia.json');
+    if (fs.existsSync(cfgPath)) {
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      res.end(fs.readFileSync(cfgPath, 'utf8'));
+    } else {
+      res.writeHead(404, { 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Sepolia contract not deployed. Run: node deploy-sepolia.js' }));
+    }
+    return;
+  }
+
+  // ── /api/env → Expose safe public config to frontend ───────────
+  if (req.url === '/api/env') {
+    const publicEnv = {
+      PINATA_JWT:                 process.env.PINATA_JWT                 || '',
+      PINATA_GATEWAY:             process.env.PINATA_GATEWAY             || 'https://gateway.pinata.cloud/ipfs/',
+      GANACHE_RPC_URL:            process.env.GANACHE_RPC_URL            || 'http://127.0.0.1:7545',
+      GANACHE_CHAIN_ID:           process.env.GANACHE_CHAIN_ID           || '1337',
+      GANACHE_CONTRACT_ADDRESS:   process.env.GANACHE_CONTRACT_ADDRESS   || '',
+      SEPOLIA_RPC_URL:            process.env.SEPOLIA_RPC_URL            || '',
+      SEPOLIA_CHAIN_ID:           process.env.SEPOLIA_CHAIN_ID           || '11155111',
+      SEPOLIA_CONTRACT_ADDRESS:   process.env.SEPOLIA_CONTRACT_ADDRESS   || '',
+    };
+    res.writeHead(200, { 'Content-Type': 'application/json' });
+    res.end(JSON.stringify(publicEnv));
+    return;
+  }
+
+  // ── Static files ────────────────────────────────────────────────
   const filePath = path.join(__dirname, req.url === '/' ? 'index.html' : req.url);
   const ext      = path.extname(filePath).toLowerCase();
   const type     = mime[ext] || 'text/plain';
@@ -50,26 +102,32 @@ const server = http.createServer((req, res) => {
   });
 });
 
-// Handle port already in use — try next port automatically
+// ── Auto-fallback if port is busy ───────────────────────────────
 server.on('error', (err) => {
   if (err.code === 'EADDRINUSE') {
     const next = Number(PORT) + 1;
-    console.log(`\n  Port ${PORT} is busy. Trying port ${next}...`);
-    server.listen(next, () => {
-      console.log(`\n  Server   ->  http://localhost:${next}`);
-      console.log(`  Config   ->  http://localhost:${next}/api/config`);
-      console.log(`  MediVault -> http://localhost:${next}/medivault/dashboard.html`);
-      console.log('\n  Press Ctrl+C to stop.\n');
-    });
+    console.log(`\n  Port ${PORT} busy — trying ${next}...`);
+    server.listen(next, () => printBanner(next));
   } else {
     console.error('Server error:', err.message);
     process.exit(1);
   }
 });
 
-server.listen(PORT, () => {
-  console.log(`\n  Server   ->  http://localhost:${PORT}`);
-  console.log(`  Config   ->  http://localhost:${PORT}/api/config`);
-  console.log(`  MediVault -> http://localhost:${PORT}/medivault/dashboard.html`);
-  console.log('\n  Press Ctrl+C to stop.\n');
-});
+server.listen(PORT, () => printBanner(PORT));
+
+function printBanner(port) {
+  console.log('\n  ╔══════════════════════════════════════════════════╗');
+  console.log('  ║           MediVault Server Running               ║');
+  console.log('  ╠══════════════════════════════════════════════════╣');
+  console.log(`  ║  App       →  http://localhost:${port}               ║`);
+  console.log(`  ║  Dashboard →  http://localhost:${port}/medivault/dashboard.html  ║`);
+  console.log(`  ║  Config    →  http://localhost:${port}/api/config    ║`);
+  console.log(`  ║  Env       →  http://localhost:${port}/api/env       ║`);
+  console.log('  ╠══════════════════════════════════════════════════╣');
+  console.log(`  ║  Ganache   →  ${process.env.GANACHE_RPC_URL || 'http://127.0.0.1:7545'}       ║`);
+  console.log(`  ║  Sepolia   →  Alchemy (configured in .env)       ║`);
+  console.log('  ╠══════════════════════════════════════════════════╣');
+  console.log('  ║  Press Ctrl+C to stop                            ║');
+  console.log('  ╚══════════════════════════════════════════════════╝\n');
+}

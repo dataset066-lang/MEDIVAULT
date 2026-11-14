@@ -463,6 +463,29 @@ const _EMBEDDED_CONFIG = {
   "abi": [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"recordId","type":"uint256"},{"indexed":true,"internalType":"address","name":"uploader","type":"address"},{"indexed":false,"internalType":"string","name":"cid","type":"string"},{"indexed":false,"internalType":"string","name":"imageType","type":"string"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"ImageStored","type":"event"},{"inputs":[],"name":"getMyRecords","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"getRecord","outputs":[{"internalType":"string","name":"cid","type":"string"},{"internalType":"string","name":"sha256Hash","type":"string"},{"internalType":"string","name":"imageType","type":"string"},{"internalType":"string","name":"filename","type":"string"},{"internalType":"uint256","name":"timestamp","type":"uint256"},{"internalType":"address","name":"uploader","type":"address"},{"internalType":"bool","name":"encrypted","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"ownerRecords","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"records","outputs":[{"internalType":"string","name":"cid","type":"string"},{"internalType":"string","name":"sha256Hash","type":"string"},{"internalType":"string","name":"imageType","type":"string"},{"internalType":"string","name":"filename","type":"string"},{"internalType":"uint256","name":"timestamp","type":"uint256"},{"internalType":"address","name":"uploader","type":"address"},{"internalType":"bool","name":"encrypted","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_cid","type":"string"},{"internalType":"string","name":"_sha256Hash","type":"string"},{"internalType":"string","name":"_imageType","type":"string"},{"internalType":"string","name":"_filename","type":"string"},{"internalType":"bool","name":"_encrypted","type":"bool"}],"name":"storeImage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalRecords","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
 };
 
+// ── Load env config from server /api/env (local) ─────────────────
+let _ENV_CONFIG = null;
+async function loadEnvConfig() {
+  if (_ENV_CONFIG) return _ENV_CONFIG;
+  try {
+    const r = await fetch('/api/env', { signal: AbortSignal.timeout(1500) });
+    if (r.ok) {
+      _ENV_CONFIG = await r.json();
+      // Update Pinata JWT from env
+      if (_ENV_CONFIG.PINATA_JWT) {
+        const jwtInput = document.getElementById('pinata-jwt');
+        if (jwtInput && !jwtInput.value) jwtInput.value = _ENV_CONFIG.PINATA_JWT;
+      }
+      // Update NETWORKS Sepolia RPC from env
+      if (_ENV_CONFIG.SEPOLIA_RPC_URL && typeof NETWORKS !== 'undefined') {
+        NETWORKS.sepolia.rpcUrl = _ENV_CONFIG.SEPOLIA_RPC_URL;
+      }
+      return _ENV_CONFIG;
+    }
+  } catch(_) {}
+  return null;
+}
+
 async function loadContractConfig() {
   // 1. Try local server API first (works when running locally with node server.js)
   try {

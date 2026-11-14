@@ -14,14 +14,36 @@ const fs         = require('fs');
 const path       = require('path');
 
 // ══════════════════════════════════════════════════
-//  CONFIG — Set your private key here
+//  LOAD .env FILE AUTOMATICALLY
 // ══════════════════════════════════════════════════
-const ALCHEMY_RPC  = 'https://eth-sepolia.g.alchemy.com/v2/alch_nxOJWzEQ-OZCh9ssWTK3k';
-const CHAIN_ID     = 11155111;
+function loadEnv() {
+  const envPath = path.join(__dirname, '.env');
+  if (!fs.existsSync(envPath)) {
+    console.log('  .env not found — using defaults / process.env');
+    return;
+  }
+  const lines = fs.readFileSync(envPath, 'utf8').split('\n');
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (!trimmed || trimmed.startsWith('#')) continue;
+    const eqIdx = trimmed.indexOf('=');
+    if (eqIdx < 0) continue;
+    const key = trimmed.substring(0, eqIdx).trim();
+    const val = trimmed.substring(eqIdx + 1).trim();
+    if (key && !process.env[key]) process.env[key] = val;
+  }
+  console.log('  .env loaded');
+}
+loadEnv();
 
-// PRIVATE KEY — paste your MetaMask account private key here
+// ══════════════════════════════════════════════════
+//  CONFIG — reads from .env automatically
+// ══════════════════════════════════════════════════
+const ALCHEMY_RPC  = process.env.SEPOLIA_RPC_URL  || 'https://eth-sepolia.g.alchemy.com/v2/alch_nxOJWzEQ-OZCh9ssWTK3k';
+const CHAIN_ID     = parseInt(process.env.SEPOLIA_CHAIN_ID || '11155111');
+
+// PRIVATE KEY — set in .env file as PRIVATE_KEY=0x...
 // MetaMask → Account → 3 dots → Account Details → Show Private Key
-// NEVER share this key publicly or commit to git
 const PRIVATE_KEY  = process.env.PRIVATE_KEY || 'PASTE_YOUR_PRIVATE_KEY_HERE';
 
 // ══════════════════════════════════════════════════
