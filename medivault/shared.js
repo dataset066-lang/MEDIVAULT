@@ -452,12 +452,39 @@ function drawSimpleQR(text, containerId) {
 // ════════════════════════════════════════
 //  BLOCKCHAIN / METAMASK
 // ════════════════════════════════════════
+// ── Embedded contract config (works on Netlify / any static host) ──
+const _EMBEDDED_CONFIG = {
+  "contractAddress": "0x482091b73484C94F7cC2Db30fA8Fa8c30801FE41",
+  "rpcUrl": "http://127.0.0.1:7545",
+  "chainId": 1337,
+  "networkPort": 7545,
+  "deployedAt": "2026-11-13T11:36:46.998Z",
+  "txHash": "0x7b16d9332805ace3094e0116787a229d697dadc6d7e5d60847e131f4cdf5ac57",
+  "abi": [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"uint256","name":"recordId","type":"uint256"},{"indexed":true,"internalType":"address","name":"uploader","type":"address"},{"indexed":false,"internalType":"string","name":"cid","type":"string"},{"indexed":false,"internalType":"string","name":"imageType","type":"string"},{"indexed":false,"internalType":"uint256","name":"timestamp","type":"uint256"}],"name":"ImageStored","type":"event"},{"inputs":[],"name":"getMyRecords","outputs":[{"internalType":"uint256[]","name":"","type":"uint256[]"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_id","type":"uint256"}],"name":"getRecord","outputs":[{"internalType":"string","name":"cid","type":"string"},{"internalType":"string","name":"sha256Hash","type":"string"},{"internalType":"string","name":"imageType","type":"string"},{"internalType":"string","name":"filename","type":"string"},{"internalType":"uint256","name":"timestamp","type":"uint256"},{"internalType":"address","name":"uploader","type":"address"},{"internalType":"bool","name":"encrypted","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"}],"name":"ownerRecords","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"","type":"uint256"}],"name":"records","outputs":[{"internalType":"string","name":"cid","type":"string"},{"internalType":"string","name":"sha256Hash","type":"string"},{"internalType":"string","name":"imageType","type":"string"},{"internalType":"string","name":"filename","type":"string"},{"internalType":"uint256","name":"timestamp","type":"uint256"},{"internalType":"address","name":"uploader","type":"address"},{"internalType":"bool","name":"encrypted","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_cid","type":"string"},{"internalType":"string","name":"_sha256Hash","type":"string"},{"internalType":"string","name":"_imageType","type":"string"},{"internalType":"string","name":"_filename","type":"string"},{"internalType":"bool","name":"_encrypted","type":"bool"}],"name":"storeImage","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"totalRecords","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"}]
+};
+
 async function loadContractConfig() {
+  // 1. Try local server API first (works when running locally with node server.js)
   try {
-    const res = await fetch('/api/config');
-    if (!res.ok) return null;
-    return await res.json();
-  } catch(_) { return null; }
+    const res = await fetch('/api/config', { signal: AbortSignal.timeout(2000) });
+    if (res.ok) {
+      const cfg = await res.json();
+      if (cfg && cfg.contractAddress && cfg.contractAddress !== '') return cfg;
+    }
+  } catch(_) {}
+
+  // 2. Try loading contract-config.json as a static file (works on Netlify)
+  try {
+    const res = await fetch('/contract-config.json', { signal: AbortSignal.timeout(2000) });
+    if (res.ok) {
+      const cfg = await res.json();
+      if (cfg && cfg.contractAddress && cfg.contractAddress !== '') return cfg;
+    }
+  } catch(_) {}
+
+  // 3. Fallback: use embedded config (always works, no server needed)
+  console.log('[MediVault] Using embedded contract config (static deployment)');
+  return _EMBEDDED_CONFIG;
 }
 
 function _updateWalletUI(connected, address, ethBal) {

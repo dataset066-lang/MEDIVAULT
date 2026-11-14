@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -415,7 +415,7 @@ const NETWORKS = {
     name:        'Sepolia Testnet',
     chainId:     11155111,
     chainIdHex:  '0xaa36a7',
-    rpcUrl:      'https://sepolia.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161',
+    rpcUrl:      'https://eth-sepolia.g.alchemy.com/v2/alch_nxOJWzEQ-OZCh9ssWTK3k',
     currency:    'SepoliaETH',
     explorer:    'https://sepolia.etherscan.io/tx/',
     color:       '#7C3AED',
@@ -576,6 +576,59 @@ async function storeOnBlockchainPatched() {
 
 // Replace store button action
 document.getElementById('store-chain-btn').onclick = storeOnBlockchainPatched;
+
+// ── Load correct contract config based on network ───
+async function loadContractForNetwork(net) {
+  const cfg = NETWORKS[net];
+  let contractCfg = null;
+
+  if (net === 'ganache') {
+    // Try local server first, then embedded
+    contractCfg = await loadContractConfig();
+  } else if (net === 'sepolia') {
+    // Try sepolia-specific config file first
+    try {
+      const r = await fetch('/contract-config-sepolia.json', { signal: AbortSignal.timeout(2000) });
+      if (r.ok) contractCfg = await r.json();
+    } catch(_) {}
+    // Try medivault subfolder
+    if (!contractCfg) {
+      try {
+        const r = await fetch('/medivault/contract-config-sepolia.json', { signal: AbortSignal.timeout(2000) });
+        if (r.ok) contractCfg = await r.json();
+      } catch(_) {}
+    }
+    // Check if _SEPOLIA_CONFIG is defined in shared.js
+    if (!contractCfg && typeof _SEPOLIA_CONFIG !== 'undefined') {
+      contractCfg = _SEPOLIA_CONFIG;
+    }
+  }
+
+  const addrEl  = document.getElementById('bc-contract-addr');
+  const rpcEl   = document.getElementById('bc-rpc');
+  const statEl  = document.getElementById('bc-contract-status');
+
+  if (contractCfg && contractCfg.contractAddress) {
+    // Store in chain state with network-specific override
+    window._mvChain.contractConfig = contractCfg;
+    window._mvChain.contractConfig._targetChainId  = cfg.chainId;
+    window._mvChain.contractConfig._targetChainHex = cfg.chainIdHex;
+
+    if (addrEl)  addrEl.textContent  = contractCfg.contractAddress;
+    if (rpcEl)   rpcEl.textContent   = cfg.name + ' — Chain ' + cfg.chainId;
+    if (statEl)  statEl.innerHTML    = '<span class="badge badge-success">Deployed</span>';
+
+    if (net === 'sepolia') {
+      toast('Sepolia contract loaded: ' + contractCfg.contractAddress.slice(0,10) + '...', 'success');
+    }
+  } else {
+    if (addrEl)  addrEl.textContent  = 'Not deployed on ' + cfg.name;
+    if (rpcEl)   rpcEl.textContent   = cfg.name + ' — Chain ' + cfg.chainId;
+    if (statEl)  statEl.innerHTML    = net === 'sepolia'
+      ? '<span class="badge badge-warning">Run: node deploy-sepolia.js</span>'
+      : '<span class="badge badge-danger">Run: node deploy.js</span>';
+  }
+}
 
 // ── Render TX History ────────────────────────────────
 function renderTxHistory() {
