@@ -5,6 +5,237 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secure Retrieval — MediVault</title>
   <link rel="stylesheet" href="shared.css">
+  <style>
+    /* ── Smart Fetch Card ── */
+    .smart-fetch-card {
+      background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%);
+      border: 1.5px solid #BFDBFE;
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow-md);
+    }
+    .smart-fetch-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .smart-fetch-sub {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+    }
+    .record-input-wrap {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+    .record-input-wrap .form-group {
+      flex: 1;
+      margin-bottom: 0;
+    }
+    .big-input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 18px;
+      font-weight: 600;
+      border: 2px solid var(--border);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--text);
+      outline: none;
+      transition: border 0.2s;
+      text-align: center;
+      letter-spacing: 1px;
+    }
+    .big-input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    .big-input::placeholder { font-size: 14px; font-weight: 400; letter-spacing: 0; color: #94A3B8; }
+
+    .fetch-btn {
+      padding: 14px 28px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fetch-btn:hover { background: var(--primary-hover); transform: translateY(-1px); }
+    .fetch-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── Fetched Record Card ── */
+    .fetched-record {
+      display: none;
+      background: #fff;
+      border: 1.5px solid #86EFAC;
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-top: 16px;
+    }
+    .fetched-record.show { display: block; }
+    .fetched-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .fetched-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #DCFCE7;
+      color: #15803D;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 4px 12px;
+      border-radius: 999px;
+      border: 1px solid #86EFAC;
+    }
+
+    .record-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .record-field {
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+    .record-field.full { grid-column: 1 / -1; }
+    .rf-label {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .rf-value {
+      font-size: 12px;
+      font-family: monospace;
+      color: var(--text);
+      word-break: break-all;
+    }
+    .rf-value.highlight { color: var(--primary); font-weight: 600; }
+    .rf-value.teal { color: var(--teal); }
+
+    /* Key input section */
+    .key-section {
+      display: none;
+      margin-top: 20px;
+      padding: 20px;
+      background: #FFFBEB;
+      border: 1.5px solid #FDE68A;
+      border-radius: var(--radius);
+    }
+    .key-section.show { display: block; }
+    .key-section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #92400E;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .key-section-sub {
+      font-size: 12px;
+      color: #78350F;
+      margin-bottom: 14px;
+    }
+    .key-input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-family: monospace;
+      border: 1.5px solid #FCD34D;
+      border-radius: 8px;
+      background: #fff;
+      outline: none;
+      transition: border 0.2s;
+    }
+    .key-input:focus { border-color: #F59E0B; box-shadow: 0 0 0 3px rgba(245,158,11,0.1); }
+
+    .decrypt-btn {
+      width: 100%;
+      margin-top: 14px;
+      padding: 14px;
+      background: linear-gradient(135deg, #2563EB, #7C3AED);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+    .decrypt-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+    .decrypt-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* My Records List */
+    .records-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 320px;
+      overflow-y: auto;
+    }
+    .record-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      background: #F8FAFC;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .record-row:hover {
+      background: rgba(37,99,235,0.05);
+      border-color: var(--primary);
+    }
+    .record-row .rr-id {
+      width: 36px; height: 36px;
+      background: var(--primary);
+      color: #fff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 13px;
+      flex-shrink: 0;
+    }
+    .record-row .rr-info { flex: 1; min-width: 0; }
+    .record-row .rr-cid  { font-size: 11px; font-family: monospace; color: var(--teal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .record-row .rr-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .record-row .rr-btn  {
+      font-size: 11px;
+      padding: 4px 10px;
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+  </style>
 </head>
 <body>
 <div class="app-layout">
@@ -17,57 +248,145 @@
       </div>
       <div class="topbar-right">
         <div id="wallet-status-bar"></div>
+        <div class="wallet-toggle-wrap">
+          <span>Wallet</span>
+          <label class="toggle-switch">
+            <input type="checkbox" id="wallet-toggle" onchange="onWalletToggle(this)">
+            <span class="toggle-track"></span>
+          </label>
+        </div>
       </div>
     </div>
 
     <div class="page-content">
       <div class="page-header">
-        <h1 class="page-title">🔓 Step 7 — Secure Retrieval &amp; Decryption</h1>
-        <p class="page-subtitle">Download an encrypted image from IPFS, verify its SHA-256 integrity, decrypt it using AES-256-GCM, and view the original medical image.</p>
+        <h1 class="page-title">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/><line x1="12" y1="15" x2="12" y2="19"/><line x1="10" y1="17" x2="14" y2="17"/></svg>
+          Secure Image Retrieval
+        </h1>
+        <p class="page-subtitle">Enter a Record ID — CID, metadata, and file info are fetched automatically from blockchain. Only your encryption key is needed.</p>
       </div>
 
-      <!-- Pipeline visual -->
-      <div class="pipeline-bar">
-        <div class="pipe-step active"><span class="p-icon">🔗</span><span class="p-label">Retrieve CID</span></div>
-        <div class="pipe-arrow">→</div>
-        <div class="pipe-step"><span class="p-icon">📥</span><span class="p-label">IPFS Download</span></div>
-        <div class="pipe-arrow">→</div>
-        <div class="pipe-step"><span class="p-icon">🔍</span><span class="p-label">SHA-256 Verify</span></div>
-        <div class="pipe-arrow">→</div>
-        <div class="pipe-step"><span class="p-icon">🔐</span><span class="p-label">AES Decrypt</span></div>
-        <div class="pipe-arrow">→</div>
-        <div class="pipe-step"><span class="p-icon">🖼️</span><span class="p-label">View Image</span></div>
+      <!-- Pipeline -->
+      <div class="pipeline-bar" style="display:flex;align-items:center;gap:0;overflow-x:auto;margin-bottom:24px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:14px 20px;box-shadow:var(--shadow);">
+        <div style="text-align:center;min-width:100px;" id="pipe-1">
+          <div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;">Record ID</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Enter one value</div>
+        </div>
+        <div style="color:#CBD5E1;padding:0 10px;font-size:18px;">→</div>
+        <div style="text-align:center;min-width:100px;" id="pipe-2">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Blockchain Fetch</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Auto from smart contract</div>
+        </div>
+        <div style="color:#CBD5E1;padding:0 10px;font-size:18px;">→</div>
+        <div style="text-align:center;min-width:100px;" id="pipe-3">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">IPFS Download</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Auto from CID</div>
+        </div>
+        <div style="color:#CBD5E1;padding:0 10px;font-size:18px;">→</div>
+        <div style="text-align:center;min-width:100px;" id="pipe-4">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">Enter Key</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Your AES-256 key</div>
+        </div>
+        <div style="color:#CBD5E1;padding:0 10px;font-size:18px;">→</div>
+        <div style="text-align:center;min-width:100px;" id="pipe-5">
+          <div style="font-size:11px;font-weight:700;color:var(--text-muted);text-transform:uppercase;">View Image</div>
+          <div style="font-size:10px;color:var(--text-muted);margin-top:2px;">Original restored</div>
+        </div>
       </div>
 
       <div class="grid-2">
-        <!-- Left: Inputs -->
+        <!-- LEFT COLUMN -->
         <div style="display:flex;flex-direction:column;gap:20px;">
-          <div class="card">
-            <div class="card-title" style="margin-bottom:16px;">🔑 Decryption Parameters</div>
 
-            <div class="form-group">
-              <label class="form-label">IPFS Content Identifier (CID) <span class="required">*</span></label>
-              <div class="input-with-btn">
-                <input type="text" id="dec-cid" placeholder="bafybeig… or Qm…">
-                <button class="btn btn-secondary btn-sm" onclick="autofillFromResult()">⚡ Auto-fill</button>
+          <!-- SMART FETCH CARD -->
+          <div class="smart-fetch-card">
+            <div class="smart-fetch-title">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2563EB" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              Blockchain Record Lookup
+            </div>
+            <div class="smart-fetch-sub">Enter a Record ID and all metadata (CID, filename, type, timestamp) will be fetched automatically from the smart contract.</div>
+
+            <div class="record-input-wrap">
+              <div class="form-group">
+                <label class="form-label" style="font-size:12px;font-weight:600;color:var(--text-muted);margin-bottom:6px;display:block;">RECORD ID <span style="color:var(--danger);">*</span></label>
+                <input type="number" id="record-id-input" class="big-input" placeholder="e.g.  1" min="1">
+              </div>
+              <button class="fetch-btn" id="fetch-btn" onclick="fetchFromBlockchain()">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+                Fetch
+              </button>
+            </div>
+
+            <!-- Status message -->
+            <div id="fetch-status" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;font-size:13px;"></div>
+
+            <!-- Fetched Record Display -->
+            <div class="fetched-record" id="fetched-record">
+              <div class="fetched-header">
+                <div class="fetched-badge">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  Record Found on Blockchain
+                </div>
+                <span style="font-size:11px;color:var(--text-muted);" id="fr-record-num">Record #—</span>
+              </div>
+              <div class="record-fields">
+                <div class="record-field full">
+                  <div class="rf-label">IPFS CID</div>
+                  <div class="rf-value teal" id="fr-cid">—</div>
+                </div>
+                <div class="record-field">
+                  <div class="rf-label">Image Type</div>
+                  <div class="rf-value highlight" id="fr-type">—</div>
+                </div>
+                <div class="record-field">
+                  <div class="rf-label">Filename</div>
+                  <div class="rf-value" id="fr-filename">—</div>
+                </div>
+                <div class="record-field">
+                  <div class="rf-label">Encrypted</div>
+                  <div class="rf-value" id="fr-encrypted">—</div>
+                </div>
+                <div class="record-field">
+                  <div class="rf-label">Uploader</div>
+                  <div class="rf-value" id="fr-uploader" style="font-size:10px;">—</div>
+                </div>
+                <div class="record-field full">
+                  <div class="rf-label">SHA-256 Hash (from blockchain)</div>
+                  <div class="rf-value" id="fr-hash" style="font-size:10px;">—</div>
+                </div>
+                <div class="record-field full">
+                  <div class="rf-label">Registered On</div>
+                  <div class="rf-value" id="fr-timestamp">—</div>
+                </div>
               </div>
             </div>
+          </div>
 
-            <div class="form-group">
-              <label class="form-label">AES-256 Encryption Key (Hex) <span class="required">*</span></label>
-              <input type="password" id="dec-key" placeholder="64 hex characters (256-bit key)…" style="font-family:monospace;font-size:11px;">
-              <span class="text-xs text-muted mt-4">64 characters · Example: a3f2b1c0d4e5f6a7…</span>
+          <!-- KEY INPUT (shown after blockchain fetch) -->
+          <div class="key-section" id="key-section">
+            <div class="key-section-title">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#92400E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              AES-256 Decryption Key Required
+            </div>
+            <div class="key-section-sub">
+              All metadata has been fetched from blockchain. Only your AES-256 encryption key is needed to decrypt the image. The IV is embedded in the encrypted file — no need to enter it separately.
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Initialization Vector (IV) <span class="required">*</span></label>
-              <input type="text" id="dec-iv" placeholder="24 hex characters (12 bytes)…" style="font-family:monospace;font-size:11px;">
-              <span class="text-xs text-muted mt-4">24 characters · Example: 1a2b3c4d5e6f7a8b…</span>
+            <label class="form-label" style="font-size:12px;font-weight:600;color:#92400E;margin-bottom:6px;display:block;">
+              AES-256 Key (Hex) <span style="color:var(--danger);">*</span>
+            </label>
+            <input type="password" id="dec-key"
+              class="key-input"
+              placeholder="64 hex characters — your encryption key...">
+            <div style="font-size:11px;color:#78350F;margin-top:6px;">
+              64 characters · This was generated when the image was encrypted
             </div>
 
-            <div class="form-group">
-              <label class="form-label">IPFS Gateway</label>
-              <select id="dec-gateway">
+            <!-- IPFS Gateway (optional) -->
+            <div style="margin-top:12px;">
+              <label class="form-label" style="font-size:12px;font-weight:600;color:#92400E;margin-bottom:6px;display:block;">IPFS Gateway</label>
+              <select id="dec-gateway" style="width:100%;padding:8px 12px;border:1.5px solid #FCD34D;border-radius:8px;background:#fff;font-size:13px;outline:none;">
                 <option value="https://gateway.pinata.cloud/ipfs/">Pinata Gateway (Recommended)</option>
                 <option value="https://ipfs.io/ipfs/">ipfs.io</option>
                 <option value="https://cloudflare-ipfs.com/ipfs/">Cloudflare IPFS</option>
@@ -75,36 +394,59 @@
               </select>
             </div>
 
-            <button class="btn btn-primary btn-full" onclick="startDecryption()">
-              🔓 Retrieve &amp; Decrypt Image
+            <button class="decrypt-btn" id="decrypt-btn" onclick="startSmartDecryption()">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
+              Retrieve &amp; Decrypt Image
             </button>
           </div>
 
-          <!-- Session autofill hint -->
-          <div class="card" id="session-hint" style="background:#EFF6FF;border-color:#BFDBFE;">
-            <div class="card-title" style="margin-bottom:10px;color:var(--primary);">💡 Current Session Values</div>
-            <div class="info-grid" style="grid-template-columns:1fr;">
-              <div class="info-item"><div class="i-label">CID</div><div class="i-value teal" id="hint-cid" style="font-size:11px;">—</div></div>
-              <div class="info-item"><div class="i-label">Key (first 16)</div><div class="i-value primary" id="hint-key" style="font-size:11px;">—</div></div>
-              <div class="info-item"><div class="i-label">IV</div><div class="i-value" id="hint-iv" style="font-size:11px;">—</div></div>
+          <!-- OR: Session autofill -->
+          <div class="card" id="session-card" style="border-style:dashed;">
+            <div class="card-title" style="margin-bottom:12px;font-size:13px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              Current Session
             </div>
-            <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="autofillFromResult()">
-              ⚡ Auto-fill All Fields
+            <div style="font-size:12px;color:var(--text-muted);margin-bottom:10px;" id="session-info-text">No active session data</div>
+            <button class="btn btn-primary btn-sm" onclick="autofillSession()" id="session-autofill-btn" style="display:none;">
+              Use Current Session Data
             </button>
           </div>
+
         </div>
 
-        <!-- Right: Status + Result -->
+        <!-- RIGHT COLUMN -->
         <div style="display:flex;flex-direction:column;gap:20px;">
+
+          <!-- My Records (from blockchain) -->
+          <div class="card" id="my-records-card">
+            <div class="card-header">
+              <div class="card-title">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                My Blockchain Records
+              </div>
+              <button class="btn btn-secondary btn-sm" onclick="loadMyRecords()" id="load-records-btn">
+                Load Records
+              </button>
+            </div>
+            <div id="my-records-status" style="font-size:12px;color:var(--text-muted);margin-bottom:10px;">
+              Connect wallet and click "Load Records" to see all your uploaded images.
+            </div>
+            <div class="records-list" id="records-list">
+              <div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">
+                No records loaded yet
+              </div>
+            </div>
+          </div>
+
           <!-- Progress -->
           <div id="dec-progress" style="display:none;" class="card">
-            <div class="card-title" style="margin-bottom:14px;">⏳ Decryption Progress</div>
+            <div class="card-title" style="margin-bottom:14px;">Decryption Progress</div>
             <div class="progress-wrap"><div class="progress-bar" id="dec-bar"></div></div>
-            <div class="step-list">
+            <div class="step-list" style="margin-top:14px;">
               <div class="step-item">
                 <div class="step-num pending" id="dps-fetch-s">1</div>
                 <div class="step-body">
-                  <div class="step-title">Downloading Encrypted File from IPFS</div>
+                  <div class="step-title">Downloading from IPFS</div>
                   <div class="step-desc" id="dps-fetch-d">Connecting to gateway…</div>
                 </div>
               </div>
@@ -112,44 +454,41 @@
                 <div class="step-num pending" id="dps-verify-s">2</div>
                 <div class="step-body">
                   <div class="step-title">SHA-256 Integrity Verification</div>
-                  <div class="step-desc" id="dps-verify-d">Computing and verifying file hash…</div>
+                  <div class="step-desc" id="dps-verify-d">Verifying hash against blockchain record…</div>
                 </div>
               </div>
               <div class="step-item">
                 <div class="step-num pending" id="dps-decrypt-s">3</div>
                 <div class="step-body">
                   <div class="step-title">AES-256-GCM Decryption</div>
-                  <div class="step-desc">Decrypting image using key and IV…</div>
+                  <div class="step-desc">Decrypting using your key…</div>
                 </div>
               </div>
               <div class="step-item">
                 <div class="step-num pending" id="dps-render-s">4</div>
                 <div class="step-body">
                   <div class="step-title">Rendering Original Image</div>
-                  <div class="step-desc">Displaying the decrypted medical image…</div>
+                  <div class="step-desc">Displaying decrypted medical image…</div>
                 </div>
               </div>
             </div>
           </div>
 
           <!-- Error -->
-          <div id="dec-error" style="display:none;" class="card" style="background:#FEF2F2;border-color:#FECACA;color:var(--danger);padding:14px;"></div>
+          <div id="dec-error" style="display:none;background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--radius);padding:14px;color:var(--danger);font-size:13px;"></div>
 
           <!-- Success Result -->
           <div id="dec-result" style="display:none;" class="card">
-            <div class="card-title" style="margin-bottom:14px;color:var(--success);">✅ Decryption Successful</div>
-
-            <div class="decrypt-success">
-              <div class="ds-title">✅ Image Retrieved &amp; Decrypted</div>
-              <div class="decrypt-meta">
-                <span class="label">File Size:</span>   <span class="val" id="dec-size">—</span>
-                <span class="label">Integrity:</span>   <span class="val" id="dec-integrity">—</span>
-                <span class="label">Gateway:</span>     <span class="val" id="dec-gw-used">—</span>
-                <span class="label">Encryption:</span>  <span class="val" style="color:var(--success);">AES-256-GCM ✓</span>
-              </div>
+            <div class="card-title" style="margin-bottom:14px;color:var(--success);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Decryption Successful
             </div>
-
-            <!-- Decrypted image -->
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;font-size:12px;">
+              <div><span style="color:var(--text-muted);">File Size:</span> <strong id="dec-size">—</strong></div>
+              <div><span style="color:var(--text-muted);">Integrity:</span> <strong id="dec-integrity">—</strong></div>
+              <div><span style="color:var(--text-muted);">Gateway:</span> <strong id="dec-gw-used">—</strong></div>
+              <div><span style="color:var(--text-muted);">Encryption:</span> <strong style="color:var(--success);">AES-256-GCM ✓</strong></div>
+            </div>
             <div style="position:relative;border-radius:8px;overflow:hidden;background:#000;">
               <img id="dec-img" src="" alt="Decrypted Medical Image"
                 style="width:100%;max-height:320px;object-fit:contain;display:block;">
@@ -158,61 +497,352 @@
                 DECRYPTED ✓
               </div>
             </div>
-
-            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
-              <button onclick="downloadDecrypted()" class="btn btn-success btn-full">
-                💾 Download Decrypted Image
-              </button>
-            </div>
+            <button onclick="downloadDecrypted()" class="btn btn-success btn-full" style="margin-top:14px;">
+              Download Decrypted Image
+            </button>
           </div>
 
-          <!-- How it works -->
-          <div class="card">
-            <div class="card-title" style="margin-bottom:12px;">🔒 How Secure Retrieval Works</div>
-            <ol style="font-size:13px;color:var(--text-muted);padding-left:18px;line-height:2.3;">
-              <li>The encrypted file is fetched from IPFS using its content-addressed CID</li>
-              <li>SHA-256 hash is computed and compared against the original hash for integrity</li>
-              <li>AES-256-GCM decryption is performed using your 256-bit key and 12-byte IV</li>
-              <li>The original PNG image data is rendered directly in-browser — no server needed</li>
-              <li>The decrypted image never leaves your device during this process</li>
-            </ol>
-          </div>
         </div>
       </div>
-
     </div>
   </div>
 </div>
 
 <div id="toast-container"></div>
-
+<script src="https://cdn.jsdelivr.net/npm/ethers@6.13.4/dist/ethers.umd.min.js"></script>
 <script src="shared.js"></script>
 <script>
-  initSidebar('retrieval');
-  MediVault.load();
+initSidebar('retrieval');
+MediVault.load();
 
-  // Show session hints
-  document.getElementById('hint-cid').textContent = MediVault.ipfsCID || 'No CID in session';
-  document.getElementById('hint-key').textContent = MediVault.encryptionKey
-    ? MediVault.encryptionKey.slice(0,16) + '…' : 'No key in session';
-  document.getElementById('hint-iv').textContent  = MediVault.encryptionIV  || 'No IV in session';
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let fetchedRecord = null;   // blockchain record data
+let fetchedCID    = null;   // CID from blockchain
 
-  if (!MediVault.ipfsCID && !MediVault.encryptionKey) {
-    document.getElementById('session-hint').style.background = '#F9FAFB';
-    document.getElementById('session-hint').style.borderColor = 'var(--border)';
+// ═══════════════════════════════════════════════════════
+//  FETCH FROM BLOCKCHAIN
+// ═══════════════════════════════════════════════════════
+async function fetchFromBlockchain() {
+  const recordIdRaw = document.getElementById('record-id-input').value.trim();
+  if (!recordIdRaw || isNaN(recordIdRaw) || parseInt(recordIdRaw) < 1) {
+    toast('Please enter a valid Record ID (number)', 'error');
+    return;
+  }
+  const recordId = parseInt(recordIdRaw);
+
+  const btn      = document.getElementById('fetch-btn');
+  const statusEl = document.getElementById('fetch-status');
+  btn.disabled   = true;
+  btn.innerHTML  = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Fetching...';
+
+  statusEl.style.display = 'block';
+  statusEl.style.background = '#EFF6FF';
+  statusEl.style.color = '#1D4ED8';
+  statusEl.style.border = '1px solid #BFDBFE';
+  statusEl.textContent = 'Connecting to blockchain...';
+
+  // Hide previous results
+  document.getElementById('fetched-record').classList.remove('show');
+  document.getElementById('key-section').classList.remove('show');
+  document.getElementById('dec-result').style.display = 'none';
+  document.getElementById('dec-error').style.display  = 'none';
+  document.getElementById('dec-progress').style.display = 'none';
+
+  try {
+    // Load contract config
+    const cfg = await loadContractConfig();
+    if (!cfg || !cfg.contractAddress) {
+      throw new Error('Contract not configured. Run: node deploy.js');
+    }
+
+    statusEl.textContent = 'Connecting to smart contract...';
+
+    // Connect to blockchain (read-only — no wallet needed)
+    const rpcUrl   = cfg.rpcUrl || 'http://127.0.0.1:7545';
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    const contract = new ethers.Contract(cfg.contractAddress, cfg.abi, provider);
+
+    statusEl.textContent = 'Fetching Record #' + recordId + ' from blockchain...';
+
+    // Call getRecord
+    const record = await contract.getRecord(recordId);
+
+    // record = [cid, sha256Hash, imageType, filename, timestamp, uploader, encrypted]
+    fetchedRecord = {
+      id:        recordId,
+      cid:       record[0],
+      sha256:    record[1],
+      imageType: record[2],
+      filename:  record[3],
+      timestamp: Number(record[4]),
+      uploader:  record[5],
+      encrypted: record[6],
+    };
+    fetchedCID = fetchedRecord.cid;
+
+    // Fill UI
+    document.getElementById('fr-record-num').textContent = 'Record #' + recordId;
+    document.getElementById('fr-cid').textContent        = fetchedRecord.cid;
+    document.getElementById('fr-type').textContent       = fetchedRecord.imageType || 'Unknown';
+    document.getElementById('fr-filename').textContent   = fetchedRecord.filename  || 'Unknown';
+    document.getElementById('fr-encrypted').textContent  = fetchedRecord.encrypted ? 'Yes (AES-256-GCM)' : 'No';
+    document.getElementById('fr-uploader').textContent   = fetchedRecord.uploader;
+    document.getElementById('fr-hash').textContent       = fetchedRecord.sha256   || 'Not stored';
+    document.getElementById('fr-timestamp').textContent  = fetchedRecord.timestamp
+      ? new Date(fetchedRecord.timestamp * 1000).toLocaleString()
+      : 'Unknown';
+
+    // Show fetched record + key section
+    document.getElementById('fetched-record').classList.add('show');
+    if (fetchedRecord.encrypted) {
+      document.getElementById('key-section').classList.add('show');
+    } else {
+      // Not encrypted — can decrypt directly with empty key
+      document.getElementById('key-section').classList.add('show');
+    }
+
+    // Update status
+    statusEl.style.background = '#F0FDF4';
+    statusEl.style.color      = '#15803D';
+    statusEl.style.border     = '1px solid #86EFAC';
+    statusEl.textContent      = 'Record #' + recordId + ' found! CID and metadata loaded from blockchain.';
+
+    // Update pipeline
+    setPipeActive(2);
+
+    toast('Record #' + recordId + ' fetched from blockchain!', 'success');
+
+    // Auto-fill pipelineResult hash for integrity check
+    if (fetchedRecord.sha256) {
+      window.MediVault.sha256Hash = fetchedRecord.sha256;
+    }
+
+  } catch(err) {
+    statusEl.style.background = '#FEF2F2';
+    statusEl.style.color      = '#DC2626';
+    statusEl.style.border     = '1px solid #FECACA';
+
+    if (err.message && err.message.includes('Record does not exist')) {
+      statusEl.textContent = 'Record #' + recordId + ' does not exist on blockchain.';
+      toast('Record #' + recordId + ' not found', 'error');
+    } else if (err.message && err.message.includes('CALL_EXCEPTION')) {
+      statusEl.textContent = 'Smart contract error. Make sure Ganache is running and contract is deployed.';
+      toast('Contract call failed — is Ganache running?', 'error');
+    } else {
+      statusEl.textContent = 'Error: ' + err.message;
+      toast('Fetch failed: ' + err.message, 'error');
+    }
+    console.error('[fetchFromBlockchain]', err);
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg> Fetch';
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  START DECRYPTION using fetched CID + entered key
+// ═══════════════════════════════════════════════════════
+async function startSmartDecryption() {
+  const keyHex  = document.getElementById('dec-key').value.trim();
+  const gateway = document.getElementById('dec-gateway').value;
+
+  if (!fetchedCID) {
+    toast('Fetch a record from blockchain first!', 'error');
+    return;
+  }
+  if (!keyHex || keyHex.length !== 64) {
+    toast('AES key must be 64 hex characters (256-bit)', 'error');
+    document.getElementById('dec-key').focus();
+    return;
   }
 
-  function autofillFromResult() {
-    const mv = window.MediVault;
-    if (mv.ipfsCID)         document.getElementById('dec-cid').value = mv.ipfsCID;
-    if (mv.encryptionKey)   document.getElementById('dec-key').value = mv.encryptionKey;
-    if (mv.encryptionIV)    document.getElementById('dec-iv').value  = mv.encryptionIV;
-    if (mv.ipfsCID || mv.encryptionKey) {
-      toast('Fields auto-filled from current session!', 'success');
-    } else {
-      toast('No session data available. Process an image first.', 'warning');
+  // Fill the hidden fields that startDecryption() reads
+  // We use a fake IV that gets ignored — IV is extracted from the encrypted file header
+  const cidInput = document.getElementById('dec-cid');
+  const ivInput  = document.getElementById('dec-iv');
+  if (!cidInput) {
+    // Create hidden fields dynamically
+    addHidden('dec-cid', fetchedCID);
+    addHidden('dec-iv',  '000000000000000000000000');  // placeholder — real IV from file
+  } else {
+    cidInput.value = fetchedCID;
+    if (ivInput) ivInput.value = '000000000000000000000000';
+  }
+
+  setPipeActive(3);
+  document.getElementById('dec-progress').style.display = 'block';
+  document.getElementById('dec-result').style.display   = 'none';
+  document.getElementById('dec-error').style.display    = 'none';
+
+  // Run decryption (from shared.js)
+  await startDecryption();
+  setPipeActive(5);
+}
+
+function addHidden(id, value) {
+  let el = document.getElementById(id);
+  if (!el) {
+    el = document.createElement('input');
+    el.type = 'hidden';
+    el.id   = id;
+    document.body.appendChild(el);
+  }
+  el.value = value;
+}
+
+// ═══════════════════════════════════════════════════════
+//  LOAD MY RECORDS from blockchain
+// ═══════════════════════════════════════════════════════
+async function loadMyRecords() {
+  const ch  = window._mvChain;
+  const btn = document.getElementById('load-records-btn');
+  const statusEl = document.getElementById('my-records-status');
+  const listEl   = document.getElementById('records-list');
+
+  if (!ch || !ch.walletAddress) {
+    // Try connecting wallet first
+    statusEl.textContent = 'Connecting wallet...';
+    const ok = await connectWallet();
+    if (!ok) {
+      statusEl.textContent = 'Connect your wallet to load records.';
+      return;
     }
   }
+
+  btn.disabled = true;
+  btn.textContent = 'Loading...';
+  statusEl.textContent = 'Fetching your records from blockchain...';
+
+  try {
+    const cfg = await loadContractConfig();
+    if (!cfg) throw new Error('Contract not deployed');
+
+    const provider = new ethers.JsonRpcProvider(cfg.rpcUrl);
+    const contract = new ethers.Contract(cfg.contractAddress, cfg.abi,
+      ch.signer || provider);
+
+    // Get all record IDs for this wallet
+    const recordIds = await contract.getMyRecords();
+
+    if (!recordIds || recordIds.length === 0) {
+      listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--text-muted);font-size:13px;">No records found for this wallet</div>';
+      statusEl.textContent = 'No records found for ' + ch.walletAddress.slice(0,10) + '...';
+      return;
+    }
+
+    statusEl.textContent = recordIds.length + ' record(s) found. Click to fetch.';
+
+    // Fetch details for each record
+    const records = [];
+    for (const id of recordIds) {
+      try {
+        const r = await contract.getRecord(Number(id));
+        records.push({
+          id:        Number(id),
+          cid:       r[0],
+          imageType: r[2],
+          filename:  r[3],
+          timestamp: Number(r[4]),
+          encrypted: r[6],
+        });
+      } catch(_) {}
+    }
+
+    // Render list
+    listEl.innerHTML = records.map(r => `
+      <div class="record-row" onclick="quickFill(${r.id})">
+        <div class="rr-id">#${r.id}</div>
+        <div class="rr-info">
+          <div class="rr-cid">${r.cid.slice(0,36)}...</div>
+          <div class="rr-meta">${r.imageType} · ${r.filename} · ${new Date(r.timestamp*1000).toLocaleDateString()}</div>
+        </div>
+        <button class="rr-btn" onclick="event.stopPropagation();quickFill(${r.id})">Select</button>
+      </div>
+    `).join('');
+
+  } catch(err) {
+    listEl.innerHTML = '<div style="text-align:center;padding:20px;color:var(--danger);font-size:13px;">Error: ' + err.message + '</div>';
+    statusEl.textContent = 'Failed to load records';
+    console.error(err);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Refresh';
+  }
+}
+
+// Quick fill record ID and auto-fetch
+function quickFill(id) {
+  document.getElementById('record-id-input').value = id;
+  fetchFromBlockchain();
+  document.getElementById('record-id-input').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ═══════════════════════════════════════════════════════
+//  SESSION DATA
+// ═══════════════════════════════════════════════════════
+function autofillSession() {
+  const mv = window.MediVault;
+  if (mv.ipfsCID) {
+    fetchedCID = mv.ipfsCID;
+    document.getElementById('fetch-status').style.display = 'block';
+    document.getElementById('fetch-status').style.background = '#F0FDF4';
+    document.getElementById('fetch-status').style.color      = '#15803D';
+    document.getElementById('fetch-status').style.border     = '1px solid #86EFAC';
+    document.getElementById('fetch-status').textContent = 'Session data loaded. CID: ' + mv.ipfsCID.slice(0,20) + '...';
+    document.getElementById('key-section').classList.add('show');
+
+    // Pre-fill key if available
+    if (mv.encryptionKey) {
+      document.getElementById('dec-key').value = mv.encryptionKey;
+    }
+    addHidden('dec-cid', mv.ipfsCID);
+    addHidden('dec-iv',  mv.encryptionIV || '000000000000000000000000');
+    toast('Session data loaded', 'success');
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  PIPELINE INDICATOR
+// ═══════════════════════════════════════════════════════
+function setPipeActive(step) {
+  for (let i = 1; i <= 5; i++) {
+    const el = document.getElementById('pipe-' + i);
+    if (!el) continue;
+    const title = el.querySelector('div:first-child');
+    if (i < step)  { title.style.color = 'var(--success)'; }
+    else if (i === step) { title.style.color = 'var(--primary)'; }
+    else           { title.style.color = 'var(--text-muted)'; }
+  }
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+(function init() {
+  const mv = window.MediVault;
+
+  // Session card
+  if (mv.ipfsCID || mv.encryptionKey) {
+    const infoEl = document.getElementById('session-info-text');
+    const btnEl  = document.getElementById('session-autofill-btn');
+    infoEl.innerHTML = (mv.ipfsCID
+      ? '<b>CID:</b> ' + mv.ipfsCID.slice(0,20) + '...<br>' : '') +
+      (mv.encryptionKey ? '<b>Key:</b> ' + mv.encryptionKey.slice(0,16) + '...' : '');
+    btnEl.style.display = 'inline-flex';
+  }
+
+  // Add spin animation
+  const style = document.createElement('style');
+  style.textContent = '@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }';
+  document.head.appendChild(style);
+
+  // Enter key on record input
+  document.getElementById('record-id-input').addEventListener('keydown', e => {
+    if (e.key === 'Enter') fetchFromBlockchain();
+  });
+})();
 </script>
 </body>
 </html>
