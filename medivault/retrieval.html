@@ -6,12 +6,8 @@
   <title>Secure Retrieval — MediVault</title>
   <link rel="stylesheet" href="shared.css">
   <style>
-    .retrieval-center {
-      max-width: 600px;
-      margin: 0 auto;
-    }
+    .retrieval-center { max-width: 560px; margin: 0 auto; }
 
-    /* ── Main Decrypt Card ── */
     .decrypt-card {
       background: #fff;
       border: 1.5px solid var(--border);
@@ -19,48 +15,28 @@
       padding: 36px 32px;
       box-shadow: var(--shadow-md);
     }
-    .dc-title {
-      font-size: 20px;
-      font-weight: 700;
-      color: var(--text);
-      text-align: center;
-      margin-bottom: 6px;
-    }
-    .dc-sub {
-      font-size: 13px;
-      color: var(--text-muted);
-      text-align: center;
-      margin-bottom: 30px;
-    }
+    .dc-title { font-size: 20px; font-weight: 700; color: var(--text); text-align: center; margin-bottom: 6px; }
+    .dc-sub   { font-size: 13px; color: var(--text-muted); text-align: center; margin-bottom: 28px; }
 
-    /* ── Wallet connect area ── */
-    .wallet-area {
-      border: 1.5px dashed var(--border);
+    /* Wallet connect */
+    .wallet-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border: 1.5px solid var(--border);
       border-radius: 12px;
-      padding: 20px;
-      text-align: center;
       margin-bottom: 20px;
+      background: #FAFAFA;
       transition: all 0.2s;
     }
-    .wallet-area.connected {
-      border: 1.5px solid #86EFAC;
-      background: #F0FDF4;
-    }
-    .wallet-area-icon {
-      font-size: 28px;
-      margin-bottom: 8px;
-    }
-    .wallet-area-text {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 12px;
-    }
-    .wallet-area.connected .wallet-area-text {
-      color: #15803D;
-      font-weight: 600;
-    }
-    .connect-wallet-btn {
-      padding: 10px 24px;
+    .wallet-row.connected { border-color: #86EFAC; background: #F0FDF4; }
+    .wallet-row-icon { flex-shrink: 0; }
+    .wallet-row-text { flex: 1; font-size: 13px; color: var(--text-muted); }
+    .wallet-row.connected .wallet-row-text { color: #15803D; font-weight: 600; }
+    .wallet-row-text small { display: block; font-size: 11px; margin-top: 2px; font-family: monospace; }
+    .connect-btn {
+      padding: 9px 18px;
       background: #F97316;
       color: #fff;
       border: none;
@@ -68,277 +44,109 @@
       font-size: 13px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-    }
-    .connect-wallet-btn:hover { background: #EA580C; }
-    .wallet-addr-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: #DCFCE7;
-      color: #15803D;
-      font-size: 12px;
-      font-weight: 600;
-      padding: 5px 14px;
-      border-radius: 999px;
-      border: 1px solid #86EFAC;
-      font-family: monospace;
-    }
-
-    /* ── Records selector ── */
-    .records-area {
-      display: none;
-      margin-bottom: 20px;
-    }
-    .records-area.show { display: block; }
-    .records-label {
-      font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-    }
-    .records-select-wrap {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-    .records-select {
-      flex: 1;
-      padding: 11px 14px;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      background: #F8FAFC;
-      font-size: 13px;
-      color: var(--text);
-      outline: none;
-      cursor: pointer;
-      transition: border 0.2s;
-    }
-    .records-select:focus { border-color: var(--primary); background: #fff; }
-    .refresh-btn {
-      padding: 11px 14px;
-      background: #F1F5F9;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      cursor: pointer;
-      color: var(--text-muted);
+      white-space: nowrap;
       transition: all 0.15s;
-      display: flex;
-      align-items: center;
+      display: flex; align-items: center; gap: 6px;
     }
-    .refresh-btn:hover { background: #E2E8F0; color: var(--text); }
-    .record-loading {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 6px;
-      display: none;
-    }
-
-    /* ── Selected record info ── */
-    .selected-record-info {
-      display: none;
-      background: #F8FAFC;
+    .connect-btn:hover { background: #EA580C; }
+    .connect-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .disconnect-btn {
+      padding: 6px 12px;
+      background: none;
+      color: #64748B;
       border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px 16px;
-      margin-bottom: 20px;
-      font-size: 12px;
-    }
-    .selected-record-info.show { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .sri-item .sri-label { color: var(--text-muted); font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .sri-item .sri-value { color: var(--text); font-weight: 600; margin-top: 2px; word-break: break-all; }
-    .sri-item .sri-value.teal  { color: #0D9488; font-family: monospace; font-size: 11px; }
-    .sri-item .sri-value.blue  { color: var(--primary); }
-    .sri-item.full { grid-column: 1/-1; }
-
-    /* ── Key input ── */
-    .key-area { margin-bottom: 24px; }
-    .key-label {
+      border-radius: 6px;
       font-size: 11px;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.7px;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    }
-    .key-input-field {
-      width: 100%;
-      padding: 13px 16px;
-      font-size: 13px;
-      font-family: monospace;
-      border: 1.5px solid var(--border);
-      border-radius: 10px;
-      background: #F8FAFC;
-      color: var(--text);
-      outline: none;
-      letter-spacing: 1px;
-      transition: all 0.2s;
-    }
-    .key-input-field:focus {
-      border-color: var(--primary);
-      background: #fff;
-      box-shadow: 0 0 0 3px rgba(37,99,235,0.08);
-    }
-    .key-hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
-
-    /* ── Main action button ── */
-    .decrypt-btn {
-      width: 100%;
-      padding: 16px;
-      background: linear-gradient(135deg, #2563EB, #7C3AED);
-      color: #fff;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      font-weight: 700;
       cursor: pointer;
+    }
+
+    /* Field */
+    .field-wrap { margin-bottom: 20px; }
+    .field-label {
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 11px; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.7px; color: var(--text-muted); margin-bottom: 8px;
+    }
+    .field-input {
+      width: 100%; padding: 13px 16px; font-size: 13px;
+      font-family: monospace; letter-spacing: 1px;
+      border: 1.5px solid var(--border); border-radius: 10px;
+      background: #F8FAFC; color: var(--text); outline: none; transition: all 0.2s;
+    }
+    .field-input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 3px rgba(37,99,235,0.08); }
+    .field-hint { font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+    .use-session {
+      font-size: 11px; color: var(--primary); cursor: pointer;
+      font-weight: 600; text-transform: none; letter-spacing: 0;
+    }
+    .use-session:hover { text-decoration: underline; }
+
+    /* Decrypt button */
+    .decrypt-btn {
+      width: 100%; padding: 16px;
+      background: linear-gradient(135deg, #2563EB, #7C3AED);
+      color: #fff; border: none; border-radius: 12px;
+      font-size: 15px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
       transition: all 0.2s;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
     }
     .decrypt-btn:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
     .decrypt-btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
 
-    /* ── Status bar ── */
+    /* Status */
     .status-msg {
-      display: none;
-      padding: 10px 16px;
-      border-radius: 8px;
-      font-size: 13px;
-      margin-top: 14px;
-      border: 1px solid var(--border);
+      display: none; padding: 10px 16px; border-radius: 8px;
+      font-size: 13px; margin-top: 14px; border: 1px solid var(--border);
     }
 
-    /* ── Progress card ── */
+    /* Progress */
     .progress-card {
-      display: none;
-      background: #fff;
-      border: 1.5px solid var(--border);
-      border-radius: 14px;
-      padding: 24px;
-      box-shadow: var(--shadow);
-      margin-top: 20px;
+      display: none; background: #fff; border: 1.5px solid var(--border);
+      border-radius: 14px; padding: 24px; box-shadow: var(--shadow); margin-top: 20px;
     }
-    .progress-card.show { display: block; }
-    .prog-title { font-size: 14px; font-weight: 700; margin-bottom: 14px; color: var(--text); }
-    .prog-bar-wrap { background: #F1F5F9; border-radius: 4px; height: 6px; overflow: hidden; margin-bottom: 18px; }
-    .prog-bar { height: 100%; background: linear-gradient(90deg, #2563EB, #7C3AED); border-radius: 4px; width: 0%; transition: width 0.4s; }
-
-    .step-row {
-      display: flex;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 10px 0;
-      border-bottom: 1px solid #F1F5F9;
-    }
-    .step-row:last-child { border-bottom: none; }
+    .prog-bar-wrap { background: #F1F5F9; border-radius: 4px; height: 6px; overflow: hidden; margin: 10px 0 18px; }
+    .prog-bar { height: 100%; background: linear-gradient(90deg,#2563EB,#7C3AED); border-radius: 4px; width: 0%; transition: width 0.4s; }
+    .step-row { display: flex; align-items: flex-start; gap: 12px; padding: 10px 0; border-bottom: 1px solid #F1F5F9; }
+    .step-row:last-child { border: none; }
     .step-dot {
-      width: 26px; height: 26px;
-      border-radius: 50%;
-      border: 2px solid #E2E8F0;
-      background: #F8FAFC;
-      color: #94A3B8;
-      font-size: 11px;
-      font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: all 0.2s;
+      width: 26px; height: 26px; border-radius: 50%; border: 2px solid #E2E8F0;
+      background: #F8FAFC; color: #94A3B8; font-size: 11px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: all 0.2s;
     }
     .step-dot.running { border-color: #FCD34D; background: #FEF9C3; color: #92400E; animation: pulse 1s infinite; }
     .step-dot.done    { border-color: #86EFAC; background: #DCFCE7; color: #15803D; }
     .step-dot.error   { border-color: #FECACA; background: #FEE2E2; color: #DC2626; }
-    .step-text-title  { font-size: 13px; font-weight: 600; color: var(--text); }
-    .step-text-desc   { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+    .step-title { font-size: 13px; font-weight: 600; color: var(--text); }
+    .step-desc  { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+
+    /* Error */
+    .error-box {
+      display: none; background: #FEF2F2; border: 1.5px solid #FECACA;
+      border-radius: 12px; padding: 16px; color: #DC2626; font-size: 13px; margin-top: 16px;
+    }
+
+    /* Result */
+    .result-card {
+      display: none; background: #fff; border: 1.5px solid #86EFAC;
+      border-radius: 16px; padding: 28px; box-shadow: var(--shadow-md); margin-top: 20px;
+    }
+    .result-card.show { display: block; }
+    .result-title { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 700; color: #15803D; margin-bottom: 14px; }
+    .result-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; font-size: 12px; margin-bottom: 14px; }
+    .result-meta .rl { color: var(--text-muted); }
+    .result-meta .rv { font-weight: 600; color: var(--text); }
+    .img-wrap { position: relative; border-radius: 10px; overflow: hidden; background: #000; margin-bottom: 14px; }
+    .img-wrap img { width: 100%; max-height: 360px; object-fit: contain; display: block; }
+    .dec-badge { position: absolute; top:10px; left:10px; background: rgba(22,163,74,0.9); color:#fff; font-size:11px; font-weight:700; padding:4px 12px; border-radius:999px; }
+    .download-btn {
+      width: 100%; padding: 13px; background: #16A34A; color: #fff; border: none;
+      border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px; transition: background 0.2s;
+    }
+    .download-btn:hover { background: #15803D; }
 
     @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
     @keyframes spin  { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
-
-    /* ── Error ── */
-    .error-box {
-      display: none;
-      background: #FEF2F2;
-      border: 1.5px solid #FECACA;
-      border-radius: 12px;
-      padding: 16px;
-      color: #DC2626;
-      font-size: 13px;
-      margin-top: 16px;
-    }
-
-    /* ── Result ── */
-    .result-card {
-      display: none;
-      background: #fff;
-      border: 1.5px solid #86EFAC;
-      border-radius: 16px;
-      padding: 28px;
-      box-shadow: var(--shadow-md);
-      margin-top: 20px;
-    }
-    .result-card.show { display: block; }
-    .result-success-title {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 17px;
-      font-weight: 700;
-      color: #15803D;
-      margin-bottom: 16px;
-    }
-    .result-meta {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      font-size: 12px;
-      margin-bottom: 16px;
-    }
-    .result-meta .rm-label { color: var(--text-muted); }
-    .result-meta .rm-val   { font-weight: 600; color: var(--text); }
-    .result-img-wrap {
-      position: relative;
-      border-radius: 10px;
-      overflow: hidden;
-      background: #000;
-      margin-bottom: 16px;
-    }
-    .result-img-wrap img { width: 100%; max-height: 360px; object-fit: contain; display: block; }
-    .decrypted-label {
-      position: absolute;
-      top: 10px; left: 10px;
-      background: rgba(22,163,74,0.9);
-      color: #fff;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 12px;
-      border-radius: 999px;
-    }
-    .download-btn {
-      width: 100%;
-      padding: 14px;
-      background: #16A34A;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      transition: background 0.2s;
-    }
-    .download-btn:hover { background: #15803D; }
   </style>
 </head>
 <body>
@@ -348,9 +156,7 @@
 
     <div class="topbar">
       <div class="breadcrumb">
-        <span>MediVault</span>
-        <span class="bc-sep">›</span>
-        <span class="bc-active">Secure Retrieval</span>
+        <span>MediVault</span><span class="bc-sep">›</span><span class="bc-active">Secure Retrieval</span>
       </div>
       <div class="topbar-right">
         <div id="wallet-status-bar"></div>
@@ -363,97 +169,54 @@
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
           Secure Image Retrieval
         </h1>
-        <p class="page-subtitle">Connect wallet → select record → enter key → decrypt. Everything else is automatic.</p>
+        <p class="page-subtitle">Connect MetaMask and enter your AES-256 key — everything else is automatic.</p>
       </div>
 
       <div class="retrieval-center">
 
-        <!-- ═══ MAIN DECRYPT CARD ═══ -->
+        <!-- ═══ MAIN CARD ═══ -->
         <div class="decrypt-card">
           <div class="dc-title">Decrypt Medical Image</div>
-          <div class="dc-sub">Connect your wallet — records auto-load from blockchain</div>
+          <div class="dc-sub">MetaMask + AES Key — that's all you need</div>
 
-          <!-- STEP 1: Wallet Connect -->
-          <div class="wallet-area" id="wallet-area">
-            <div class="wallet-area-icon">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="17" cy="12" r="1"/></svg>
+          <!-- Wallet Row -->
+          <div class="wallet-row" id="wallet-row">
+            <div class="wallet-row-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#F97316" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="17" cy="12" r="1"/></svg>
             </div>
-            <div class="wallet-area-text" id="wallet-area-text">
+            <div class="wallet-row-text" id="wallet-row-text">
               Connect MetaMask to auto-load your records
             </div>
-            <button class="connect-wallet-btn" id="connect-wallet-btn" onclick="connectAndLoadRecords()">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="17" cy="12" r="1"/></svg>
-              Connect MetaMask
+            <button class="connect-btn" id="connect-btn" onclick="doConnect()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="17" cy="12" r="1"/></svg>
+              Connect
             </button>
           </div>
 
-          <!-- STEP 2: Record Selector (auto-appears after wallet connect) -->
-          <div class="records-area" id="records-area">
-            <div class="records-label">Select Record</div>
-            <div class="records-select-wrap">
-              <select class="records-select" id="records-select" onchange="onRecordSelect()">
-                <option value="">-- Loading records... --</option>
-              </select>
-              <button class="refresh-btn" onclick="loadRecordsIntoSelect()" title="Refresh">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
-              </button>
-            </div>
-            <div class="record-loading" id="record-loading">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite;vertical-align:middle;margin-right:4px;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>
-              Loading your records from blockchain...
-            </div>
-          </div>
-
-          <!-- STEP 3: Selected record info (auto-appears on select) -->
-          <div class="selected-record-info" id="selected-record-info">
-            <div class="sri-item full">
-              <div class="sri-label">IPFS CID</div>
-              <div class="sri-value teal" id="sri-cid">—</div>
-            </div>
-            <div class="sri-item">
-              <div class="sri-label">Image Type</div>
-              <div class="sri-value blue" id="sri-type">—</div>
-            </div>
-            <div class="sri-item">
-              <div class="sri-label">Filename</div>
-              <div class="sri-value" id="sri-filename">—</div>
-            </div>
-            <div class="sri-item">
-              <div class="sri-label">Uploaded</div>
-              <div class="sri-value" id="sri-time">—</div>
-            </div>
-            <div class="sri-item">
-              <div class="sri-label">Encrypted</div>
-              <div class="sri-value" id="sri-encrypted">—</div>
-            </div>
-          </div>
-
-          <!-- STEP 4: AES Key (only manual input) -->
-          <div class="key-area" id="key-area">
-            <div class="key-label">
+          <!-- AES Key Field — ONLY user input -->
+          <div class="field-wrap">
+            <div class="field-label">
               <span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
                 AES-256 Decryption Key
               </span>
-              <span id="key-autofill-btn"
-                onclick="autofillKey()"
-                style="display:none;font-size:11px;color:var(--primary);cursor:pointer;font-weight:600;text-transform:none;letter-spacing:0;">
+              <span class="use-session" id="use-session-btn" onclick="useSessionKey()" style="display:none;">
                 Use session key
               </span>
             </div>
             <input type="password"
               id="dec-key"
-              class="key-input-field"
+              class="field-input"
               placeholder="64-character hex encryption key"
-              onkeydown="if(event.key==='Enter') startDecrypt()">
-            <div class="key-hint">Your AES-256 key — generated when image was encrypted</div>
+              onkeydown="if(event.key==='Enter') doDecrypt()">
+            <div class="field-hint">64 hex characters · Generated when image was encrypted</div>
           </div>
 
-          <!-- Status message -->
+          <!-- Status -->
           <div class="status-msg" id="status-msg"></div>
 
           <!-- Decrypt Button -->
-          <button class="decrypt-btn" id="decrypt-btn" onclick="startDecrypt()">
+          <button class="decrypt-btn" id="decrypt-btn" onclick="doDecrypt()">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>
             Retrieve &amp; Decrypt
           </button>
@@ -461,30 +224,13 @@
 
         <!-- Progress -->
         <div class="progress-card" id="progress-card">
-          <div class="prog-title">Processing</div>
+          <div class="step-title" style="font-size:14px;font-weight:700;color:var(--text);">Processing</div>
           <div class="prog-bar-wrap"><div class="prog-bar" id="prog-bar"></div></div>
-          <div>
-            <div class="step-row">
-              <div class="step-dot" id="st1">1</div>
-              <div><div class="step-text-title">Blockchain Fetch</div><div class="step-text-desc" id="st1-d">Reading CID and metadata from smart contract</div></div>
-            </div>
-            <div class="step-row">
-              <div class="step-dot" id="st2">2</div>
-              <div><div class="step-text-title">IPFS Download</div><div class="step-text-desc" id="st2-d">Downloading encrypted file from decentralized storage</div></div>
-            </div>
-            <div class="step-row">
-              <div class="step-dot" id="st3">3</div>
-              <div><div class="step-text-title">SHA-256 Integrity Check</div><div class="step-text-desc" id="st3-d">Comparing hash against blockchain record</div></div>
-            </div>
-            <div class="step-row">
-              <div class="step-dot" id="st4">4</div>
-              <div><div class="step-text-title">AES-256-GCM Decryption</div><div class="step-text-desc" id="st4-d">Decrypting using your key</div></div>
-            </div>
-            <div class="step-row">
-              <div class="step-dot" id="st5">5</div>
-              <div><div class="step-text-title">Render Image</div><div class="step-text-desc" id="st5-d">Displaying original medical image</div></div>
-            </div>
-          </div>
+          <div class="step-row"><div class="step-dot" id="st1">1</div><div><div class="step-title">Blockchain Lookup</div><div class="step-desc" id="st1-d">Fetching latest CID from smart contract</div></div></div>
+          <div class="step-row"><div class="step-dot" id="st2">2</div><div><div class="step-title">IPFS Download</div><div class="step-desc" id="st2-d">Downloading encrypted file</div></div></div>
+          <div class="step-row"><div class="step-dot" id="st3">3</div><div><div class="step-title">SHA-256 Integrity Check</div><div class="step-desc" id="st3-d">Verifying hash against blockchain</div></div></div>
+          <div class="step-row"><div class="step-dot" id="st4">4</div><div><div class="step-title">AES-256-GCM Decryption</div><div class="step-desc" id="st4-d">Decrypting with your key</div></div></div>
+          <div class="step-row"><div class="step-dot" id="st5">5</div><div><div class="step-title">Render Image</div><div class="step-desc" id="st5-d">Displaying original medical image</div></div></div>
         </div>
 
         <!-- Error -->
@@ -492,34 +238,34 @@
 
         <!-- Result -->
         <div class="result-card" id="result-card">
-          <div class="result-success-title">
+          <div class="result-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
             Decryption Successful
           </div>
           <div class="result-meta">
-            <div><span class="rm-label">File Size </span><span class="rm-val" id="res-size">—</span></div>
-            <div><span class="rm-label">Integrity </span><span class="rm-val" id="res-integrity">—</span></div>
-            <div><span class="rm-label">Gateway </span><span class="rm-val" id="res-gw">—</span></div>
-            <div><span class="rm-label">Algorithm </span><span class="rm-val" style="color:#15803D;">AES-256-GCM ✓</span></div>
+            <div><span class="rl">File Size </span><span class="rv" id="res-size">—</span></div>
+            <div><span class="rl">Integrity </span><span class="rv" id="res-integrity">—</span></div>
+            <div><span class="rl">Gateway </span><span class="rv" id="res-gw">—</span></div>
+            <div><span class="rl">Algorithm </span><span class="rv" style="color:#15803D;">AES-256-GCM ✓</span></div>
           </div>
-          <div class="result-img-wrap">
+          <div class="img-wrap">
             <img id="dec-img" src="" alt="Decrypted Medical Image">
-            <div class="decrypted-label">DECRYPTED ✓</div>
+            <div class="dec-badge">DECRYPTED ✓</div>
           </div>
-          <button class="download-btn" onclick="downloadDecrypted()">
+          <button class="download-btn" onclick="doDownload()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Download Decrypted Image
           </button>
         </div>
 
-      </div><!-- end retrieval-center -->
+      </div>
     </div>
   </div>
 </div>
 
-<!-- Hidden fields for internal use -->
+<!-- Hidden fields (internal use only) -->
 <input type="hidden" id="dec-cid">
-<input type="hidden" id="dec-iv"  value="000000000000000000000000">
+<input type="hidden" id="dec-iv" value="000000000000000000000000">
 <input type="hidden" id="dec-gateway" value="https://gateway.pinata.cloud/ipfs/">
 
 <div id="toast-container"></div>
@@ -529,217 +275,159 @@
 initSidebar('retrieval');
 MediVault.load();
 
-// ─── State ────────────────────────────────────────────────────
-let selectedRecord = null;   // { id, cid, sha256, imageType, filename, timestamp, encrypted }
-let _blob          = null;
+// ── spin animation ──────────────────────────────────────────
+const _sty = document.createElement('style');
+_sty.textContent = '@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
+document.head.appendChild(_sty);
 
-// ─── UI helpers ───────────────────────────────────────────────
+let _blob = null;
+
+// ── UI helpers ──────────────────────────────────────────────
 function setStep(n, state, desc) {
   const el = document.getElementById('st' + n);
   if (!el) return;
   el.className = 'step-dot ' + state;
   el.textContent = state==='done' ? '✓' : state==='error' ? '✗' : state==='running' ? '…' : n;
-  if (desc) { const d=document.getElementById('st'+n+'-d'); if(d) d.textContent=desc; }
+  if (desc) { const d = document.getElementById('st'+n+'-d'); if(d) d.textContent = desc; }
 }
-function setBar(pct) {
-  const b=document.getElementById('prog-bar'); if(b) b.style.width=pct+'%';
-}
+function setBar(pct) { const b = document.getElementById('prog-bar'); if(b) b.style.width = pct+'%'; }
 function showStatus(msg, type) {
-  const el=document.getElementById('status-msg');
-  el.style.display='block';
-  const c={info:['#EFF6FF','#1D4ED8','#BFDBFE'],success:['#F0FDF4','#15803D','#86EFAC'],
-           error:['#FEF2F2','#DC2626','#FECACA'],warning:['#FFFBEB','#92400E','#FDE68A']};
-  const s=c[type]||c.info;
-  el.style.background=s[0]; el.style.color=s[1]; el.style.border='1px solid '+s[2];
-  el.textContent=msg;
+  const el = document.getElementById('status-msg');
+  el.style.display = 'block';
+  const c = {
+    info   : ['#EFF6FF','#1D4ED8','#BFDBFE'],
+    success: ['#F0FDF4','#15803D','#86EFAC'],
+    error  : ['#FEF2F2','#DC2626','#FECACA'],
+    warning: ['#FFFBEB','#92400E','#FDE68A'],
+  };
+  const s = c[type] || c.info;
+  el.style.background = s[0]; el.style.color = s[1]; el.style.border = '1px solid '+s[2];
+  el.textContent = msg;
 }
-function resetProgress() {
-  document.getElementById('progress-card').classList.remove('show');
-  document.getElementById('progress-card').style.display='none';
+function resetUI() {
+  document.getElementById('progress-card').style.display = 'none';
   document.getElementById('result-card').classList.remove('show');
-  document.getElementById('error-box').style.display='none';
+  document.getElementById('error-box').style.display = 'none';
   for(let i=1;i<=5;i++) setStep(i,'pending',null);
   setBar(0);
 }
 
-// ─── STEP 1: Connect wallet + load records ────────────────────
-async function connectAndLoadRecords() {
-  const btn = document.getElementById('connect-wallet-btn');
-  btn.disabled=true;
-  btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Connecting...';
+// ── Connect MetaMask ────────────────────────────────────────
+async function doConnect() {
+  const btn = document.getElementById('connect-btn');
+  btn.disabled = true;
+  btn.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Connecting...';
 
   const ok = await connectWallet();
-  if (!ok) {
-    btn.disabled=false;
-    btn.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z"/><circle cx="17" cy="12" r="1"/></svg> Connect MetaMask';
-    return;
-  }
 
-  const ch = window._mvChain;
-  const addr = ch.walletAddress;
+  if (ok) {
+    const addr = window._mvChain.walletAddress;
+    document.getElementById('wallet-row').classList.add('connected');
+    document.getElementById('wallet-row-text').innerHTML =
+      '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#15803D" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:4px;"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'+
+      ' Connected'+
+      '<small>' + addr.slice(0,10) + '…' + addr.slice(-6) + '</small>';
+    btn.innerHTML = 'Connected ✓';
+    btn.style.background = '#16A34A';
 
-  // Update wallet area UI
-  const wa = document.getElementById('wallet-area');
-  wa.classList.add('connected');
-  document.getElementById('wallet-area-text').innerHTML =
-    '<div class="wallet-addr-pill">'+
-    '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'+
-    addr.slice(0,6)+'…'+addr.slice(-4)+
-    '</div>';
-  btn.style.display = 'none';
-
-  // Show records area and load
-  document.getElementById('records-area').classList.add('show');
-  await loadRecordsIntoSelect();
-
-  // Show session key hint
-  if (window.MediVault.encryptionKey) {
-    document.getElementById('key-autofill-btn').style.display = 'inline';
+    // Show session key hint if available
+    if (window.MediVault.encryptionKey) {
+      document.getElementById('use-session-btn').style.display = 'inline';
+    }
+    showStatus('Wallet connected — enter your AES key and click Decrypt', 'success');
+  } else {
+    btn.disabled = false;
+    btn.innerHTML = 'Connect';
   }
 }
 
-// ─── Load all records into dropdown ──────────────────────────
-async function loadRecordsIntoSelect() {
-  const sel     = document.getElementById('records-select');
-  const loading = document.getElementById('record-loading');
-  sel.innerHTML = '<option value="">Loading...</option>';
-  loading.style.display = 'block';
-
-  try {
-    const cfg = await loadContractConfig();
-    if (!cfg) throw new Error('Contract not configured');
-
-    const ch       = window._mvChain;
-    const provider = new ethers.JsonRpcProvider(cfg.rpcUrl);
-    const contract = new ethers.Contract(cfg.contractAddress, cfg.abi,
-      ch.signer || provider);
-
-    const ids = await contract.getMyRecords();
-    if (!ids || ids.length === 0) {
-      sel.innerHTML = '<option value="">No records found for this wallet</option>';
-      loading.style.display = 'none';
-      return;
-    }
-
-    // Fetch each record detail
-    sel.innerHTML = '<option value="">-- Select a record --</option>';
-    for (const id of ids) {
-      try {
-        const r = await contract.getRecord(Number(id));
-        const opt = document.createElement('option');
-        opt.value = Number(id);
-        const ts = Number(r[4]) ? new Date(Number(r[4])*1000).toLocaleDateString() : '';
-        opt.textContent = '#' + Number(id) + ' — ' + (r[2]||'?') + ' — ' + (r[3]||'unknown') + (ts?' ('+ts+')':'');
-        opt.dataset.cid       = r[0];
-        opt.dataset.sha256    = r[1];
-        opt.dataset.imageType = r[2];
-        opt.dataset.filename  = r[3];
-        opt.dataset.timestamp = r[4];
-        opt.dataset.encrypted = r[6];
-        sel.appendChild(opt);
-      } catch(_) {}
-    }
-
-    // Auto-select last record
-    if (sel.options.length > 1) {
-      sel.selectedIndex = sel.options.length - 1;
-      onRecordSelect();
-    }
-
-    loading.style.display = 'none';
-    toast(ids.length + ' record(s) loaded from blockchain', 'success');
-
-  } catch(e) {
-    sel.innerHTML = '<option value="">Error: ' + e.message + '</option>';
-    loading.style.display = 'none';
-    toast('Failed to load records: ' + e.message, 'error');
-  }
-}
-
-// ─── On record select → show info ─────────────────────────────
-function onRecordSelect() {
-  const sel = document.getElementById('records-select');
-  const opt = sel.options[sel.selectedIndex];
-  const infoEl = document.getElementById('selected-record-info');
-
-  if (!opt || !opt.value) {
-    infoEl.classList.remove('show');
-    selectedRecord = null;
-    return;
-  }
-
-  selectedRecord = {
-    id:        parseInt(opt.value),
-    cid:       opt.dataset.cid,
-    sha256:    opt.dataset.sha256,
-    imageType: opt.dataset.imageType,
-    filename:  opt.dataset.filename,
-    timestamp: opt.dataset.timestamp,
-    encrypted: opt.dataset.encrypted === 'true',
-  };
-
-  document.getElementById('sri-cid').textContent      = selectedRecord.cid;
-  document.getElementById('sri-type').textContent     = selectedRecord.imageType || '—';
-  document.getElementById('sri-filename').textContent = selectedRecord.filename  || '—';
-  document.getElementById('sri-time').textContent     = selectedRecord.timestamp
-    ? new Date(Number(selectedRecord.timestamp)*1000).toLocaleString() : '—';
-  document.getElementById('sri-encrypted').textContent = selectedRecord.encrypted
-    ? 'AES-256-GCM' : 'Not encrypted';
-
-  infoEl.classList.add('show');
-
-  // Set hidden CID field
-  document.getElementById('dec-cid').value = selectedRecord.cid;
-  window.MediVault.sha256Hash = selectedRecord.sha256;
-}
-
-// ─── Autofill key from session ────────────────────────────────
-function autofillKey() {
+function useSessionKey() {
   const k = window.MediVault.encryptionKey;
-  if (k) {
-    document.getElementById('dec-key').value = k;
-    toast('Session key filled', 'success');
-  }
+  if (k) { document.getElementById('dec-key').value = k; toast('Session key filled', 'success'); }
 }
 
-// ─── MAIN DECRYPT ──────────────────────────────────────────────
-async function startDecrypt() {
+// ── MAIN DECRYPT ────────────────────────────────────────────
+async function doDecrypt() {
   const keyHex = document.getElementById('dec-key').value.trim();
 
-  if (!selectedRecord) {
-    // Auto-connect and load if not done
-    toast('Connect your wallet first', 'warning');
-    return;
-  }
+  // Validate key
   if (!keyHex || keyHex.length !== 64) {
     toast('Enter your 64-character AES-256 key', 'error');
     document.getElementById('dec-key').focus();
     return;
   }
+  // Validate hex
+  if (!/^[0-9a-fA-F]{64}$/.test(keyHex)) {
+    toast('Key must be hexadecimal characters only (0-9, a-f)', 'error');
+    return;
+  }
+
+  // Connect wallet if not connected
+  const ch = window._mvChain;
+  if (!ch || !ch.walletAddress) {
+    showStatus('Connecting wallet...', 'info');
+    const ok = await connectWallet();
+    if (!ok) {
+      showStatus('MetaMask connection required', 'error');
+      return;
+    }
+    // Update wallet UI
+    document.getElementById('wallet-row').classList.add('connected');
+    document.getElementById('wallet-row-text').innerHTML =
+      'Connected: ' + window._mvChain.walletAddress.slice(0,10) + '…';
+    document.getElementById('connect-btn').innerHTML = 'Connected ✓';
+    document.getElementById('connect-btn').style.background = '#16A34A';
+  }
 
   const btn = document.getElementById('decrypt-btn');
   btn.disabled = true;
-  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Decrypting...';
+  btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="animation:spin 1s linear infinite"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Processing...';
 
-  resetProgress();
+  resetUI();
   document.getElementById('progress-card').style.display = 'block';
   showStatus('Starting...', 'info');
 
   try {
-    const cid      = selectedRecord.cid;
-    const sha256bc = selectedRecord.sha256;
-    const gateway  = 'https://gateway.pinata.cloud/ipfs/';
+    // ── STEP 1: Get latest record from blockchain ───────────
+    setStep(1, 'running', 'Loading your records from blockchain...');
+    setBar(10);
 
-    // ── Step 1: Blockchain confirm ──────────────────────────────
-    setStep(1, 'running');
-    setBar(15);
-    showStatus('Reading from blockchain...', 'info');
-    // Already fetched — just confirm
-    setStep(1, 'done', 'CID confirmed from blockchain: ' + cid.slice(0,20)+'...');
-    setBar(25);
+    const cfg = await loadContractConfig();
+    if (!cfg || !cfg.contractAddress) throw new Error('Contract not configured. Run: node deploy.js');
 
-    // ── Step 2: IPFS Download ───────────────────────────────────
-    setStep(2, 'running');
+    const provider = new ethers.JsonRpcProvider(cfg.rpcUrl);
+    const contract = new ethers.Contract(cfg.contractAddress, cfg.abi,
+      window._mvChain.signer || provider);
+
+    // Get latest record ID for this wallet
+    let cid, sha256bc, imageType;
+    try {
+      const ids = await contract.getMyRecords();
+      if (!ids || ids.length === 0) throw new Error('No records found for your wallet on this network');
+
+      // Use latest record
+      const latestId = Number(ids[ids.length - 1]);
+      const record   = await contract.getRecord(latestId);
+      cid       = record[0];
+      sha256bc  = record[1];
+      imageType = record[2];
+
+      setStep(1, 'done', 'Record #' + latestId + ' — CID: ' + cid.slice(0,20) + '...');
+    } catch(bcErr) {
+      // If getMyRecords fails (Sepolia/other network) — try session CID
+      if (window.MediVault.ipfsCID) {
+        cid      = window.MediVault.ipfsCID;
+        sha256bc = window.MediVault.sha256Hash || '';
+        setStep(1, 'done', 'Using session CID: ' + cid.slice(0,20) + '...');
+      } else {
+        throw new Error('Could not load records from blockchain. ' + bcErr.message);
+      }
+    }
+
+    setBar(22);
+
+    // ── STEP 2: IPFS Download ───────────────────────────────
+    setStep(2, 'running', 'Connecting to IPFS...');
     showStatus('Downloading from IPFS...', 'info');
 
     const gateways = [
@@ -748,10 +436,12 @@ async function startDecrypt() {
       'https://cloudflare-ipfs.com/ipfs/',
       'https://dweb.link/ipfs/',
     ];
-    let encBytes, usedGw;
+
+    let encBytes = null, usedGw = '';
     for (const gw of gateways) {
       try {
-        const r = await fetch(gw + cid);
+        setStep(2, 'running', 'Trying ' + gw.replace('https://','').split('/')[0] + '...');
+        const r = await fetch(gw + cid, { signal: AbortSignal.timeout(15000) });
         if (r.ok) {
           encBytes = new Uint8Array(await r.arrayBuffer());
           usedGw   = gw.replace('https://','').split('/')[0];
@@ -761,16 +451,15 @@ async function startDecrypt() {
     }
     if (!encBytes) throw new Error('All IPFS gateways failed. Check your internet connection.');
     setStep(2, 'done', 'Downloaded ' + formatBytes(encBytes.length) + ' from ' + usedGw);
-    setBar(50);
+    setBar(48);
 
-    // ── Step 3: SHA-256 Integrity ───────────────────────────────
-    setStep(3, 'running');
-    showStatus('Verifying integrity...', 'info');
+    // ── STEP 3: SHA-256 Integrity ───────────────────────────
+    setStep(3, 'running', 'Computing hash...');
     const computedHash = await sha256(encBytes);
     let integrityText;
     if (sha256bc && sha256bc.length === 64) {
       if (computedHash.toLowerCase() === sha256bc.toLowerCase()) {
-        setStep(3, 'done', 'Hash verified — file intact');
+        setStep(3, 'done', 'Hash verified — file intact ✓');
         integrityText = 'Verified ✓';
         document.getElementById('res-integrity').style.color = '#15803D';
       } else {
@@ -779,38 +468,38 @@ async function startDecrypt() {
         document.getElementById('res-integrity').style.color = '#DC2626';
       }
     } else {
-      setStep(3, 'done', 'Skipped — no hash stored');
+      setStep(3, 'done', 'No stored hash — skipped');
       integrityText = 'Skipped';
     }
     document.getElementById('res-integrity').textContent = integrityText;
-    setBar(68);
+    setBar(65);
 
-    // ── Step 4: AES-256-GCM Decrypt ────────────────────────────
-    setStep(4, 'running');
-    showStatus('Decrypting with AES-256-GCM...', 'info');
+    // ── STEP 4: AES-256-GCM Decrypt ────────────────────────
+    setStep(4, 'running', 'Decrypting...');
+    showStatus('Decrypting...', 'info');
 
-    // IV = first 12 bytes of encrypted file
-    const iv      = encBytes.slice(0, 12);
-    const encBody = encBytes.slice(12);
+    // IV is first 12 bytes of the encrypted file
+    const iv       = encBytes.slice(0, 12);
+    const encBody  = encBytes.slice(12);
+    const keyBytes = new Uint8Array(keyHex.match(/.{1,2}/g).map(b => parseInt(b,16)));
 
-    const keyBytes  = new Uint8Array(keyHex.match(/.{1,2}/g).map(b => parseInt(b,16)));
-    const cryptoKey = await crypto.subtle.importKey('raw', keyBytes, { name:'AES-GCM' }, false, ['decrypt']);
-
+    const cryptoKey = await crypto.subtle.importKey(
+      'raw', keyBytes, { name: 'AES-GCM' }, false, ['decrypt']
+    );
     let decBuf;
     try {
-      decBuf = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, cryptoKey, encBody);
+      decBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, encBody);
     } catch(e) {
-      throw new Error('Wrong key or corrupted file — decryption failed.');
+      throw new Error('Wrong key — decryption failed. Make sure you are using the correct AES-256 key.');
     }
-    setStep(4, 'done', 'Decrypted successfully');
+    setStep(4, 'done', 'Decrypted ' + formatBytes(decBuf.byteLength));
     setBar(85);
 
-    // ── Step 5: Render ──────────────────────────────────────────
-    setStep(5, 'running');
+    // ── STEP 5: Render ──────────────────────────────────────
+    setStep(5, 'running', 'Rendering image...');
     const decBytes  = new Uint8Array(decBuf);
     const decString = new TextDecoder().decode(decBytes);
     let imgSrc;
-
     if (decString.startsWith('data:image')) {
       imgSrc = decString;
       _blob  = dataURLtoBlob(decString);
@@ -819,10 +508,9 @@ async function startDecrypt() {
       _blob  = new Blob([decBuf], { type: mime });
       imgSrc = URL.createObjectURL(_blob);
     }
-
-    document.getElementById('dec-img').src    = imgSrc;
-    document.getElementById('res-size').textContent = formatBytes(decBuf.byteLength);
-    document.getElementById('res-gw').textContent   = usedGw;
+    document.getElementById('dec-img').src              = imgSrc;
+    document.getElementById('res-size').textContent     = formatBytes(decBuf.byteLength);
+    document.getElementById('res-gw').textContent       = usedGw;
     setStep(5, 'done', 'Image rendered');
     setBar(100);
 
@@ -832,43 +520,36 @@ async function startDecrypt() {
     showStatus('Decryption successful!', 'success');
     toast('Image decrypted successfully!', 'success');
 
-    addAuditLog('IMAGE_DECRYPT',
-      'Record:#'+selectedRecord.id+' Type:'+selectedRecord.imageType, 'success');
+    addAuditLog('IMAGE_DECRYPT', 'CID:' + cid.slice(0,20) + ' Type:' + (imageType||'—'), 'success');
 
   } catch(err) {
-    for(let i=1;i<=5;i++){
-      if(document.getElementById('st'+i)?.classList.contains('running')) setStep(i,'error');
+    for(let i=1;i<=5;i++) {
+      if(document.getElementById('st'+i)?.className.includes('running')) setStep(i,'error');
     }
-    document.getElementById('error-box').style.display='block';
-    document.getElementById('error-box').innerHTML='<strong>Error:</strong> '+err.message;
-    showStatus('Failed: '+err.message, 'error');
-    toast('Error: '+err.message, 'error');
-    console.error('[startDecrypt]', err);
+    document.getElementById('error-box').style.display = 'block';
+    document.getElementById('error-box').innerHTML = '<strong>Error:</strong> ' + err.message;
+    showStatus('Failed: ' + err.message, 'error');
+    toast('Error: ' + err.message, 'error');
+    console.error('[doDecrypt]', err);
   } finally {
-    btn.disabled=false;
-    btn.innerHTML='<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Retrieve &amp; Decrypt';
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg> Retrieve &amp; Decrypt';
   }
 }
 
-// ─── Download ─────────────────────────────────────────────────
-function downloadDecrypted() {
+// ── Download ────────────────────────────────────────────────
+function doDownload() {
   if (!_blob) return;
   const a = document.createElement('a');
-  a.href     = URL.createObjectURL(_blob);
-  a.download = 'medivault-' + (selectedRecord?.imageType||'image') + '-' + Date.now() + '.png';
+  a.href = URL.createObjectURL(_blob);
+  a.download = 'medivault-decrypted-' + Date.now() + '.png';
   a.click();
 }
 
-// ─── Auto-connect if wallet was previously connected ─────────
-(function() {
-  if (window.MediVault.encryptionKey) {
-    document.getElementById('key-autofill-btn').style.display = 'inline';
-  }
-  // Add spin CSS
-  const s=document.createElement('style');
-  s.textContent='@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}';
-  document.head.appendChild(s);
-})();
+// ── Init: show session key hint ──────────────────────────────
+if (window.MediVault.encryptionKey) {
+  document.getElementById('use-session-btn').style.display = 'inline';
+}
 </script>
 </body>
 </html>
