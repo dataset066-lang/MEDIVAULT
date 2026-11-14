@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+
+# Large image dataset — too big for GitHub (use Git LFS or external storage)
+images/
+
+# Environment & secrets
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/settings.json
+
+# Temp files
+*.tmp
+*.log

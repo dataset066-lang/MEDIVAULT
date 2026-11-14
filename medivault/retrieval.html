@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Secure Retrieval — MediVault</title>
+  <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="app-layout">
+  <div id="sidebar-container"></div>
+  <div class="main-content">
+
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span>MediVault</span><span class="bc-sep">›</span><span class="bc-active">Secure Retrieval</span>
+      </div>
+      <div class="topbar-right">
+        <div id="wallet-status-bar"></div>
+      </div>
+    </div>
+
+    <div class="page-content">
+      <div class="page-header">
+        <h1 class="page-title">🔓 Step 7 — Secure Retrieval &amp; Decryption</h1>
+        <p class="page-subtitle">Download an encrypted image from IPFS, verify its SHA-256 integrity, decrypt it using AES-256-GCM, and view the original medical image.</p>
+      </div>
+
+      <!-- Pipeline visual -->
+      <div class="pipeline-bar">
+        <div class="pipe-step active"><span class="p-icon">🔗</span><span class="p-label">Retrieve CID</span></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><span class="p-icon">📥</span><span class="p-label">IPFS Download</span></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><span class="p-icon">🔍</span><span class="p-label">SHA-256 Verify</span></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><span class="p-icon">🔐</span><span class="p-label">AES Decrypt</span></div>
+        <div class="pipe-arrow">→</div>
+        <div class="pipe-step"><span class="p-icon">🖼️</span><span class="p-label">View Image</span></div>
+      </div>
+
+      <div class="grid-2">
+        <!-- Left: Inputs -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <div class="card">
+            <div class="card-title" style="margin-bottom:16px;">🔑 Decryption Parameters</div>
+
+            <div class="form-group">
+              <label class="form-label">IPFS Content Identifier (CID) <span class="required">*</span></label>
+              <div class="input-with-btn">
+                <input type="text" id="dec-cid" placeholder="bafybeig… or Qm…">
+                <button class="btn btn-secondary btn-sm" onclick="autofillFromResult()">⚡ Auto-fill</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">AES-256 Encryption Key (Hex) <span class="required">*</span></label>
+              <input type="password" id="dec-key" placeholder="64 hex characters (256-bit key)…" style="font-family:monospace;font-size:11px;">
+              <span class="text-xs text-muted mt-4">64 characters · Example: a3f2b1c0d4e5f6a7…</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Initialization Vector (IV) <span class="required">*</span></label>
+              <input type="text" id="dec-iv" placeholder="24 hex characters (12 bytes)…" style="font-family:monospace;font-size:11px;">
+              <span class="text-xs text-muted mt-4">24 characters · Example: 1a2b3c4d5e6f7a8b…</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">IPFS Gateway</label>
+              <select id="dec-gateway">
+                <option value="https://gateway.pinata.cloud/ipfs/">Pinata Gateway (Recommended)</option>
+                <option value="https://ipfs.io/ipfs/">ipfs.io</option>
+                <option value="https://cloudflare-ipfs.com/ipfs/">Cloudflare IPFS</option>
+                <option value="https://dweb.link/ipfs/">dweb.link</option>
+              </select>
+            </div>
+
+            <button class="btn btn-primary btn-full" onclick="startDecryption()">
+              🔓 Retrieve &amp; Decrypt Image
+            </button>
+          </div>
+
+          <!-- Session autofill hint -->
+          <div class="card" id="session-hint" style="background:#EFF6FF;border-color:#BFDBFE;">
+            <div class="card-title" style="margin-bottom:10px;color:var(--primary);">💡 Current Session Values</div>
+            <div class="info-grid" style="grid-template-columns:1fr;">
+              <div class="info-item"><div class="i-label">CID</div><div class="i-value teal" id="hint-cid" style="font-size:11px;">—</div></div>
+              <div class="info-item"><div class="i-label">Key (first 16)</div><div class="i-value primary" id="hint-key" style="font-size:11px;">—</div></div>
+              <div class="info-item"><div class="i-label">IV</div><div class="i-value" id="hint-iv" style="font-size:11px;">—</div></div>
+            </div>
+            <button class="btn btn-primary btn-sm" style="margin-top:12px;" onclick="autofillFromResult()">
+              ⚡ Auto-fill All Fields
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Status + Result -->
+        <div style="display:flex;flex-direction:column;gap:20px;">
+          <!-- Progress -->
+          <div id="dec-progress" style="display:none;" class="card">
+            <div class="card-title" style="margin-bottom:14px;">⏳ Decryption Progress</div>
+            <div class="progress-wrap"><div class="progress-bar" id="dec-bar"></div></div>
+            <div class="step-list">
+              <div class="step-item">
+                <div class="step-num pending" id="dps-fetch-s">1</div>
+                <div class="step-body">
+                  <div class="step-title">Downloading Encrypted File from IPFS</div>
+                  <div class="step-desc" id="dps-fetch-d">Connecting to gateway…</div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num pending" id="dps-verify-s">2</div>
+                <div class="step-body">
+                  <div class="step-title">SHA-256 Integrity Verification</div>
+                  <div class="step-desc" id="dps-verify-d">Computing and verifying file hash…</div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num pending" id="dps-decrypt-s">3</div>
+                <div class="step-body">
+                  <div class="step-title">AES-256-GCM Decryption</div>
+                  <div class="step-desc">Decrypting image using key and IV…</div>
+                </div>
+              </div>
+              <div class="step-item">
+                <div class="step-num pending" id="dps-render-s">4</div>
+                <div class="step-body">
+                  <div class="step-title">Rendering Original Image</div>
+                  <div class="step-desc">Displaying the decrypted medical image…</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Error -->
+          <div id="dec-error" style="display:none;" class="card" style="background:#FEF2F2;border-color:#FECACA;color:var(--danger);padding:14px;"></div>
+
+          <!-- Success Result -->
+          <div id="dec-result" style="display:none;" class="card">
+            <div class="card-title" style="margin-bottom:14px;color:var(--success);">✅ Decryption Successful</div>
+
+            <div class="decrypt-success">
+              <div class="ds-title">✅ Image Retrieved &amp; Decrypted</div>
+              <div class="decrypt-meta">
+                <span class="label">File Size:</span>   <span class="val" id="dec-size">—</span>
+                <span class="label">Integrity:</span>   <span class="val" id="dec-integrity">—</span>
+                <span class="label">Gateway:</span>     <span class="val" id="dec-gw-used">—</span>
+                <span class="label">Encryption:</span>  <span class="val" style="color:var(--success);">AES-256-GCM ✓</span>
+              </div>
+            </div>
+
+            <!-- Decrypted image -->
+            <div style="position:relative;border-radius:8px;overflow:hidden;background:#000;">
+              <img id="dec-img" src="" alt="Decrypted Medical Image"
+                style="width:100%;max-height:320px;object-fit:contain;display:block;">
+              <div style="position:absolute;top:8px;left:8px;background:rgba(22,163,74,0.9);
+                          color:#fff;font-size:11px;font-weight:700;padding:3px 10px;border-radius:4px;">
+                DECRYPTED ✓
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;">
+              <button onclick="downloadDecrypted()" class="btn btn-success btn-full">
+                💾 Download Decrypted Image
+              </button>
+            </div>
+          </div>
+
+          <!-- How it works -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom:12px;">🔒 How Secure Retrieval Works</div>
+            <ol style="font-size:13px;color:var(--text-muted);padding-left:18px;line-height:2.3;">
+              <li>The encrypted file is fetched from IPFS using its content-addressed CID</li>
+              <li>SHA-256 hash is computed and compared against the original hash for integrity</li>
+              <li>AES-256-GCM decryption is performed using your 256-bit key and 12-byte IV</li>
+              <li>The original PNG image data is rendered directly in-browser — no server needed</li>
+              <li>The decrypted image never leaves your device during this process</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div id="toast-container"></div>
+
+<script src="shared.js"></script>
+<script>
+  initSidebar('retrieval');
+  MediVault.load();
+
+  // Show session hints
+  document.getElementById('hint-cid').textContent = MediVault.ipfsCID || 'No CID in session';
+  document.getElementById('hint-key').textContent = MediVault.encryptionKey
+    ? MediVault.encryptionKey.slice(0,16) + '…' : 'No key in session';
+  document.getElementById('hint-iv').textContent  = MediVault.encryptionIV  || 'No IV in session';
+
+  if (!MediVault.ipfsCID && !MediVault.encryptionKey) {
+    document.getElementById('session-hint').style.background = '#F9FAFB';
+    document.getElementById('session-hint').style.borderColor = 'var(--border)';
+  }
+
+  function autofillFromResult() {
+    const mv = window.MediVault;
+    if (mv.ipfsCID)         document.getElementById('dec-cid').value = mv.ipfsCID;
+    if (mv.encryptionKey)   document.getElementById('dec-key').value = mv.encryptionKey;
+    if (mv.encryptionIV)    document.getElementById('dec-iv').value  = mv.encryptionIV;
+    if (mv.ipfsCID || mv.encryptionKey) {
+      toast('Fields auto-filled from current session!', 'success');
+    } else {
+      toast('No session data available. Process an image first.', 'warning');
+    }
+  }
+</script>
+</body>
+</html>
